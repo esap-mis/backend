@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Component;
 import ru.javavlsu.kb.esap.dto.DoctorDTO;
+import ru.javavlsu.kb.esap.dto.DoctorResponseDTO;
 import ru.javavlsu.kb.esap.dto.auth.DoctorRegistration;
 import ru.javavlsu.kb.esap.model.Doctor;
 
@@ -37,9 +38,9 @@ public class DoctorMapper {
                 .collect(Collectors.toList());
     }
 
-    public Page<DoctorDTO> toDoctorDTOPage(Page<Doctor> doctors) {
-        List<DoctorDTO> doctorDTOList = doctors.stream()
-                .map(doctor -> modelMapper.map(doctor, DoctorDTO.class))
+    public Page<DoctorResponseDTO> toDoctorDTOPage(Page<Doctor> doctors) {
+        List<DoctorResponseDTO> doctorDTOList = doctors.stream()
+                .map(doctor -> modelMapper.map(doctor, DoctorResponseDTO.class))
                 .collect(Collectors.toList());
 
         return new PageImpl<>(doctorDTOList, doctors.getPageable(), doctors.getTotalElements());

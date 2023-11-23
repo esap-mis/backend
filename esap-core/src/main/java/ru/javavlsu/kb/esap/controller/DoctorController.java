@@ -1,6 +1,5 @@
 package ru.javavlsu.kb.esap.controller;
 
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,14 +36,17 @@ public class DoctorController {
     }
 
     @GetMapping("")
-    public ResponseEntity<Page<DoctorDTO>> getAllDoctors(@RequestParam(required = false, defaultValue = "0") int page) {
+    public ResponseEntity<?> getAllDoctors(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size
+    ) {
         UserDetails ud = userUtils.UserDetails();
         if (ud.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_PATIENT"))) {
             Patient patient = (Patient) ud.getUser();
-            return ResponseEntity.ok(doctorService.getByClinic(patient.getClinic(), page));
+            return ResponseEntity.ok(doctorService.getByClinic(patient.getClinic(), page, size));
         } else {
             Doctor doctor = (Doctor) ud.getUser();
-            return ResponseEntity.ok(doctorService.getByClinic(doctor.getClinic(), page));
+            return ResponseEntity.ok(doctorService.getByClinic(doctor.getClinic(), page, size));
         }
     }
 

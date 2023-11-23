@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import ru.javavlsu.kb.esap.dto.PatientAppointmentDTO;
 import ru.javavlsu.kb.esap.dto.PatientDTO;
 import ru.javavlsu.kb.esap.dto.PatientStatisticsByAgeDTO;
 import ru.javavlsu.kb.esap.dto.PatientStatisticsByGenderDTO;
@@ -48,10 +47,11 @@ public class PatientController {
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String patronymic,
             @RequestParam(required = false) String lastName,
-            @RequestParam(required = false, defaultValue = "0") int page
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size
     ) {
         Doctor doctor = (Doctor) userUtils.UserDetails().getUser();
-        Page<PatientResponseDTO> patients = patientService.getByClinic(firstName, patronymic, lastName, doctor.getClinic(), page);
+        Page<PatientResponseDTO> patients = patientService.getByClinic(firstName, patronymic, lastName, doctor.getClinic(), page, size);
         return ResponseEntity.ok(patients);
     }
 
