@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.javavlsu.kb.esap.dto.DoctorDTO;
+import ru.javavlsu.kb.esap.dto.DoctorResponseDTO;
 import ru.javavlsu.kb.esap.mapper.DoctorMapper;
 import ru.javavlsu.kb.esap.model.Clinic;
 import ru.javavlsu.kb.esap.model.Doctor;
@@ -42,9 +43,9 @@ public class DoctorService {
         return doctorRepository.countDoctorByClinic(clinic);
     }
 
-    public Page<DoctorDTO> getByClinic(Clinic clinic, int page) {
+    public Page<DoctorResponseDTO> getByClinic(Clinic clinic, int page, int size) {
         log.debug("class:DoctorService, method:getByClinic, sql:findByClinicOrderByIdAsc");
-        Page<Doctor> doctors = doctorRepository.findByClinicOrderByIdAsc(clinic, PageRequest.of(page, 10));
+        Page<Doctor> doctors = doctorRepository.findByClinicOrderByIdAsc(clinic, PageRequest.of(page, size));
         return doctorMapper.toDoctorDTOPage(doctors);
     }
 

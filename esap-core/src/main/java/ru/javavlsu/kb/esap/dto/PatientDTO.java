@@ -11,6 +11,8 @@ import java.time.LocalDate;
 @Setter
 public class PatientDTO {
 
+    private Long id;
+
     @NotBlank
     @Size(max = 100)
     private String firstName;

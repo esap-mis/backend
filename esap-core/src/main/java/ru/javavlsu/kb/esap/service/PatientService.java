@@ -25,7 +25,6 @@ import ru.javavlsu.kb.esap.util.PatientWithPassword;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Transactional(readOnly = true)
@@ -64,14 +63,14 @@ public class PatientService {
         return patientMapper.toPatientResponseDTOList(patients);
     }
 
-    public Page<PatientResponseDTO> getByClinic(String firstName, String patronymic, String lastName, Clinic clinic, int page) {
+    public Page<PatientResponseDTO> getByClinic(String firstName, String patronymic, String lastName, Clinic clinic, int page, int size) {
         log.debug("class:PatientService, method:getByClinic, sql:findAllByFullNameContainingIgnoreCaseAndClinicOrderByIdAsc");
         Page<Patient> patients = patientRepository.findAllByFullNameContainingIgnoreCaseAndClinicOrderByIdAsc(
                 firstName != null ? firstName : "",
                 patronymic != null ? patronymic : "",
                 lastName != null ? lastName : "",
                 clinic,
-                PageRequest.of(page, 10)
+                PageRequest.of(page, size)
         );
         return patientMapper.toPatientResponseDTOPage(patients);
     }
