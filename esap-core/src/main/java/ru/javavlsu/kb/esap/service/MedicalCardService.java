@@ -10,15 +10,16 @@ import ru.javavlsu.kb.esap.repository.MedicalCardRepository;
 import ru.javavlsu.kb.esap.repository.MedicalRecordRepository;
 import ru.javavlsu.kb.esap.exception.NotFoundException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
 public class MedicalCardService {
-
-
     private final MedicalCardRepository medicalCardRepository;
     private final MedicalRecordRepository medicalRecordRepository;
+
+    private static final String DEFAULT_ANALYSIS_RESULT = "Не готов";
 
     public MedicalCardService(MedicalCardRepository medicalCardRepository, MedicalRecordRepository medicalRecordRepository) {
         this.medicalCardRepository = medicalCardRepository;
@@ -51,8 +52,11 @@ public class MedicalCardService {
         medicalRecord.setFioAndSpecializationDoctor(doctor.getSpecialization() + ": " + doctor.getFio());
         medicalRecord.setMedicalCard(medicalCard);
         medicalRecord.getAnalyzes().forEach(analysis -> analysis.setMedicalRecord(medicalRecord));
+        medicalRecord.getAnalyzes().forEach(analysis -> {
+            analysis.setMedicalRecord(medicalRecord);
+            analysis.setResult(DEFAULT_ANALYSIS_RESULT);
+            analysis.setDate(LocalDateTime.now());
+        });
         medicalRecordRepository.save(medicalRecord);
     }
-
-
 }

@@ -49,8 +49,9 @@ public class MedicalCardController {
         if (bindingResult.hasErrors()) {
             throw new NotCreateException(ResponseMessageError.createErrorMsg(bindingResult.getFieldErrors()));
         }
-        medicalCardService.createMedicalRecord(medicalCardMapper.toMedicalRecordRequestDTO(medicalRecordRequestDTO),
-                medicalCardService.getMedicalCardByPatient(patientService.getById(id)), (Doctor) userUtils.UserDetails().getUser());
+        Doctor doctor = (Doctor) userUtils.UserDetails().getUser();
+        MedicalCard medicalCard = medicalCardService.getMedicalCardByPatient(patientService.getById(id));
+        medicalCardService.createMedicalRecord(medicalCardMapper.toMedicalRecordRequestDTO(medicalRecordRequestDTO), medicalCard, doctor);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }
