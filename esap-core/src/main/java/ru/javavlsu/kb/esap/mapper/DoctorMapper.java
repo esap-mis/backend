@@ -38,9 +38,9 @@ public class DoctorMapper {
                 .collect(Collectors.toList());
     }
 
-    public Page<DoctorResponseDTO> toDoctorDTOPage(Page<Doctor> doctors) {
-        List<DoctorResponseDTO> doctorDTOList = doctors.stream()
-                .map(doctor -> modelMapper.map(doctor, DoctorResponseDTO.class))
+    public Page<DoctorDTO> toDoctorDTOPage(Page<Doctor> doctors) {
+        List<DoctorDTO> doctorDTOList = doctors.stream()
+                .map(doctor -> modelMapper.map(doctor, DoctorDTO.class))
                 .collect(Collectors.toList());
 
         return new PageImpl<>(doctorDTOList, doctors.getPageable(), doctors.getTotalElements());
