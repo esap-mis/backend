@@ -1,5 +1,6 @@
 package ru.javavlsu.kb.esap.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
@@ -44,10 +45,12 @@ public class Patient extends User {
     @Size(max = 100)
     private String email;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "patient", fetch = FetchType.LAZY)
     @Cascade(org.hibernate.annotations.CascadeType.PERSIST)
     private MedicalCard medicalCard;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<Appointment> appointments;
 

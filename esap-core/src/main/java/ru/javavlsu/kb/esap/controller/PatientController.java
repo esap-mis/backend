@@ -1,5 +1,6 @@
 package ru.javavlsu.kb.esap.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,7 @@ import ru.javavlsu.kb.esap.mapper.PatientMapper;
 import ru.javavlsu.kb.esap.model.Doctor;
 import ru.javavlsu.kb.esap.model.Patient;
 import ru.javavlsu.kb.esap.service.AppointmentService;
-import ru.javavlsu.kb.esap.service.EmailService;
+import ru.javavlsu.kb.esap.util.KafkaProducer;
 import ru.javavlsu.kb.esap.service.PatientService;
 import ru.javavlsu.kb.esap.exception.NotCreateException;
 import ru.javavlsu.kb.esap.exception.ResponseMessageError;
@@ -28,17 +29,18 @@ import java.util.List;
 @CrossOrigin
 @RequestMapping("/api/patient")
 public class PatientController {
+
+    private final KafkaProducer kafkaProducer;
     private final PatientService patientService;
     private final PatientMapper patientMapper;
     private final UserUtils userUtils;
-    private final EmailService emailService;
     private final AppointmentService appointmentService;
 
-    public PatientController(PatientService patientService, PatientMapper patientMapper, UserUtils userUtils, EmailService emailService, AppointmentService appointmentService) {
+    public PatientController(KafkaProducer kafkaProducer, PatientService patientService, PatientMapper patientMapper, UserUtils userUtils, AppointmentService appointmentService) {
+        this.kafkaProducer = kafkaProducer;
         this.patientService = patientService;
         this.patientMapper = patientMapper;
         this.userUtils = userUtils;
-        this.emailService = emailService;
         this.appointmentService = appointmentService;
     }
 
@@ -78,7 +80,7 @@ public class PatientController {
     @PostMapping
 //    @PreAuthorize("hasRole('REGISTRANT')")
     public ResponseEntity<HttpStatus> createPatient(@Valid @RequestBody PatientDTO patientDTO,
-                                                    BindingResult bindingResult) {
+                                                    BindingResult bindingResult) throws JsonProcessingException {
         Doctor doctor = (Doctor) userUtils.UserDetails().getUser();
         if (bindingResult.hasErrors()) {
             throw new NotCreateException(ResponseMessageError.createErrorMsg(bindingResult.getFieldErrors()));
@@ -86,7 +88,7 @@ public class PatientController {
         PatientWithPassword patientWithPassword = patientService.create(patientDTO, doctor.getClinic());
         Patient createdPatient = patientWithPassword.getPatient();
         createdPatient.setPassword(patientWithPassword.getDecryptedPassword());
-        emailService.sendUserData(createdPatient);
+        kafkaProducer.sendMessage(createdPatient);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

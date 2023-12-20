@@ -1,59 +1,105 @@
 version: '3.8'
 
 services:
-  db:
-    container_name: db
-    image: postgres:14.7-alpine
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=esap
-    ports: ["15432:5432"]
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    command: >
-      bash -c '
-        echo "CREATE DATABASE esap;" > /docker-entrypoint-initdb.d/init_db.sql
-        echo "\c esap;" >> /docker-entrypoint-initdb.d/init_db.sql
-        exec docker-entrypoint.sh postgres
-      '
-    restart: unless-stopped
+#  db:
+#    container_name: db
+#    image: postgres:14.7-alpine
+#    environment:
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=postgres
+#      - POSTGRES_DB=esap
+#    ports: ["15432:5432"]
+#    volumes:
+#      - db-data:/var/lib/postgresql/data
+#    command: >
+#      bash -c '
+#        echo "CREATE DATABASE esap;" > /docker-entrypoint-initdb.d/init_db.sql
+#        echo "\c esap;" >> /docker-entrypoint-initdb.d/init_db.sql
+#        exec docker-entrypoint.sh postgres
+#      '
+#    restart: unless-stopped
+#
+#  frontend:
+#    container_name: frontend
+#    build:
+#      context: frontend/esap-admin
+#      dockerfile: /Dockerfile
+#    ports: ["3000:3000"]
+#    volumes:
+#      - /app/node_modules
+#      - ./frontend/esap-admin:/app
+#
+#  esap-core:
+#    container_name: esap-core
+#    build:
+#      context: backend/esap-core
+#      dockerfile: /Dockerfile
+#    restart: always
+#    ports: ["8080:8080"]
+#    environment:
+#      - SERVER_PORT= 8080
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/esap
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=postgres
+#      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+#
+#  pgadmin:
+#    container_name: pgadmin4_container
+#    image: dpage/pgadmin4:7
+#    restart: always
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: postgres@mail.ru
+#      PGADMIN_DEFAULT_PASSWORD: postgres
+#    ports:
+#      - "5050:80"
+#    volumes:
+#      - pgadmin-data:/var/lib/pgadmin
 
-  frontend:
-    container_name: frontend
-    build:
-      context: frontend/esap-admin
-      dockerfile: /Dockerfile
-    ports: ["3000:3000"]
-    volumes:
-      - /app/node_modules
-      - ./frontend/esap-admin:/app
-
-  esap-core:
-    container_name: esap-core
-    build:
-      context: backend/esap-core
-      dockerfile: /Dockerfile
-    restart: always
-    ports: ["8080:8080"]
-    environment:
-      - SERVER_PORT= 8080
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/esap
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
-
-  pgadmin:
-    container_name: pgadmin4_container
-    image: dpage/pgadmin4:7
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: postgres@mail.ru
-      PGADMIN_DEFAULT_PASSWORD: postgres
+  zookeeper:
+    image: zookeeper:3.7.0
+    container_name: zookeeper
+    restart: "no"
+    networks:
+      - kafka-net
     ports:
-      - "5050:80"
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
+      - "2181:2181"
+
+  kafka:
+    image: obsidiandynamics/kafka
+    container_name: kafka
+    restart: "no"
+    networks:
+      - kafka-net
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DOCKER_INTERNAL:PLAINTEXT,DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: DOCKER_INTERNAL://:29092,DOCKER_EXTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: DOCKER_INTERNAL://kafka:29092,DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+
+  kafka-ui:
+    image: obsidiandynamics/kafdrop
+    container_name: kafka-ui
+    restart: "no"
+    networks:
+      - kafka-net
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:29092"
+    depends_on:
+      - "kafka"
+
+networks:
+  kafka-net:
+    name: kafka-net
+    driver: bridge
 
 volumes:
   db-data:

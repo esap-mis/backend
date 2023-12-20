@@ -28,12 +28,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponseEntity(apiError);
     }
 
-    @ExceptionHandler(EmailSendingException.class)
-    protected ResponseEntity<ApiError> emailSendingException(EmailSendingException ex) {
-        ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(), HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
-        return buildResponseEntity(apiError);
-    }
-
     @ExceptionHandler(DeviseLoginException.class)
     protected ResponseEntity<ApiError> deviseLoginException(DeviseLoginException ex) {
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST, ex.getMessage());

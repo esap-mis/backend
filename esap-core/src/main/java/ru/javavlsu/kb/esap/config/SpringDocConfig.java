@@ -28,9 +28,4 @@ public class SpringDocConfig {
                 .setMatchingStrategy(MatchingStrategies.STRICT);
         return modelMapper;
     }
-
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
 }
