@@ -43,7 +43,7 @@ public class DoctorService {
         return doctorRepository.countDoctorByClinic(clinic);
     }
 
-    public Page<DoctorResponseDTO> getByClinic(Clinic clinic, int page, int size) {
+    public Page<DoctorDTO> getByClinic(Clinic clinic, int page, int size) {
         log.debug("class:DoctorService, method:getByClinic, sql:findByClinicOrderByIdAsc");
         Page<Doctor> doctors = doctorRepository.findByClinicOrderByIdAsc(clinic, PageRequest.of(page, size));
         return doctorMapper.toDoctorDTOPage(doctors);
