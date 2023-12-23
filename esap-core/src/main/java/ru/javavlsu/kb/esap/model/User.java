@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -44,6 +45,9 @@ public class User {
     @Max(value = 2, message = "Не верно указан пол")
     @Min(value = 1, message = "Не верно указан пол")
     private int gender;
+
+    @OneToMany(mappedBy = "user")
+    private List<UserDeviceToken> tokens;
 
     @Override
     public boolean equals(Object o) {

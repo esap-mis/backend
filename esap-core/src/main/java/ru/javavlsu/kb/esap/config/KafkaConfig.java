@@ -16,8 +16,10 @@ import java.util.Map;
 @Configuration
 public class KafkaConfig {
 
-    @Value("${topic.name}")
-    private String topic;
+    @Value("${mail.topic.name}")
+    private String mailTopic;
+    @Value("${notifications.topic.name}")
+    private String notificationsTopic;
     private final KafkaProperties kafkaProperties;
 
     @Autowired
@@ -37,9 +39,18 @@ public class KafkaConfig {
     }
 
     @Bean
-    public NewTopic topic() {
+    public NewTopic mailTopic() {
         return TopicBuilder
-                .name(topic)
+                .name(mailTopic)
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic notificationsTopic() {
+        return TopicBuilder
+                .name(notificationsTopic)
                 .partitions(1)
                 .replicas(1)
                 .build();

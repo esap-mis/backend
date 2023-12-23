@@ -7,17 +7,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import ru.javavlsu.kb.notificationservice.service.EmailService;
+import ru.javavlsu.kb.notificationservice.service.NotificationService;
 
 @Component
 public class KafkaConsumer {
 
     private final ObjectMapper objectMapper;
     private final EmailService emailService;
+    private final NotificationService notificationService;
 
     @Autowired
-    public KafkaConsumer(ObjectMapper objectMapper, EmailService emailService) {
+    public KafkaConsumer(ObjectMapper objectMapper, EmailService emailService, NotificationService notificationService) {
         this.objectMapper = objectMapper;
         this.emailService = emailService;
+        this.notificationService = notificationService;
     }
 
     @KafkaListener(topics = "esap.users.mail")
@@ -32,5 +35,16 @@ public class KafkaConsumer {
                 + "\n\nС уважением, поликлиника \"" + userData.get("clinic").get("name").asText() + "\".";
 
         emailService.sendEmail(toAddress, emailSubject, emailMessage);
+    }
+
+    @KafkaListener(topics = "esap.users.notifications.mobile")
+    public void consumeUserNotification(String message) throws JsonProcessingException {
+        JsonNode notificationData = objectMapper.readTree(message);
+
+        String to = notificationData.get("to").asText();
+        String title = notificationData.get("title").asText();
+        String body = notificationData.get("body").asText();
+
+        notificationService.sendNotificationByToken(to, title, body);
     }
 }

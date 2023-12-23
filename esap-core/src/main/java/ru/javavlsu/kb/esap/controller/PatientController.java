@@ -16,11 +16,9 @@ import ru.javavlsu.kb.esap.mapper.PatientMapper;
 import ru.javavlsu.kb.esap.model.Doctor;
 import ru.javavlsu.kb.esap.model.Patient;
 import ru.javavlsu.kb.esap.service.AppointmentService;
-import ru.javavlsu.kb.esap.util.KafkaProducer;
 import ru.javavlsu.kb.esap.service.PatientService;
 import ru.javavlsu.kb.esap.exception.NotCreateException;
 import ru.javavlsu.kb.esap.exception.ResponseMessageError;
-import ru.javavlsu.kb.esap.util.PatientWithPassword;
 import ru.javavlsu.kb.esap.util.UserUtils;
 
 import java.util.List;
@@ -30,14 +28,12 @@ import java.util.List;
 @RequestMapping("/api/patient")
 public class PatientController {
 
-    private final KafkaProducer kafkaProducer;
     private final PatientService patientService;
     private final PatientMapper patientMapper;
     private final UserUtils userUtils;
     private final AppointmentService appointmentService;
 
-    public PatientController(KafkaProducer kafkaProducer, PatientService patientService, PatientMapper patientMapper, UserUtils userUtils, AppointmentService appointmentService) {
-        this.kafkaProducer = kafkaProducer;
+    public PatientController(PatientService patientService, PatientMapper patientMapper, UserUtils userUtils, AppointmentService appointmentService) {
         this.patientService = patientService;
         this.patientMapper = patientMapper;
         this.userUtils = userUtils;
@@ -85,10 +81,7 @@ public class PatientController {
         if (bindingResult.hasErrors()) {
             throw new NotCreateException(ResponseMessageError.createErrorMsg(bindingResult.getFieldErrors()));
         }
-        PatientWithPassword patientWithPassword = patientService.create(patientDTO, doctor.getClinic());
-        Patient createdPatient = patientWithPassword.getPatient();
-        createdPatient.setPassword(patientWithPassword.getDecryptedPassword());
-        kafkaProducer.sendMessage(createdPatient);
+        patientService.create(patientDTO, doctor.getClinic());
         return ResponseEntity.ok(HttpStatus.OK);
     }
 

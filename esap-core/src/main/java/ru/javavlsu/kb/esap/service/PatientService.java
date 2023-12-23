@@ -1,5 +1,6 @@
 package ru.javavlsu.kb.esap.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -20,8 +21,8 @@ import ru.javavlsu.kb.esap.repository.MedicalCardRepository;
 import ru.javavlsu.kb.esap.repository.PatientRepository;
 import ru.javavlsu.kb.esap.exception.NotFoundException;
 import ru.javavlsu.kb.esap.repository.RoleRepository;
+import ru.javavlsu.kb.esap.util.KafkaProducer;
 import ru.javavlsu.kb.esap.util.LoginPasswordGenerator;
-import ru.javavlsu.kb.esap.util.PatientWithPassword;
 
 import java.util.HashSet;
 import java.util.List;
@@ -37,14 +38,16 @@ public class PatientService {
     private final LoginPasswordGenerator lpg;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final KafkaProducer kafkaProducer;
 
-    public PatientService(PatientRepository patientRepository, MedicalCardRepository medicalCardRepository, PatientMapper patientMapper, LoginPasswordGenerator lpg, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
+    public PatientService(PatientRepository patientRepository, MedicalCardRepository medicalCardRepository, PatientMapper patientMapper, LoginPasswordGenerator lpg, PasswordEncoder passwordEncoder, RoleRepository roleRepository, KafkaProducer kafkaProducer) {
         this.medicalCardRepository = medicalCardRepository;
         this.patientMapper = patientMapper;
         this.patientRepository = patientRepository;
         this.lpg = lpg;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
+        this.kafkaProducer = kafkaProducer;
     }
 
     public List<PatientResponseDTO> getAll() {
@@ -82,7 +85,7 @@ public class PatientService {
     }
 
     @Transactional
-    public PatientWithPassword create(PatientDTO patientDTO, Clinic clinic) {
+    public Patient create(PatientDTO patientDTO, Clinic clinic) throws JsonProcessingException {
         Patient patient = patientMapper.toPatient(patientDTO);
         patient.setClinic(clinic);
         patient.setMedicalCard(new MedicalCard(patient));
@@ -96,12 +99,14 @@ public class PatientService {
         patient.setPassword(passwordEncoder.encode(generatedPassword));
         patient.setLogin(generatedLogin);
         patientRepository.save(patient);
+        patient.setPassword(generatedPassword);
+        kafkaProducer.sendPatientData(patient);
 //        TODO FOR TESTS
 //        Patient patientCreate = patientRepository.save(patient);
 //        patientCreate.setLogin("00" + patientCreate.getId().toString());
 //        patientCreate.setPassword(passwordEncoder.encode("123"));
 //        return patientRepository.save(patientCreate);
-        return new PatientWithPassword(patient, generatedPassword);
+        return patient;
     }
 
     @Transactional
