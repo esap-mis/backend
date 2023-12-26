@@ -1,0 +1,1 @@
+alter table user_device_tokens add status varchar(255);

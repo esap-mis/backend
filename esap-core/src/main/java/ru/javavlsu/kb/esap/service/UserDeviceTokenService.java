@@ -6,14 +6,16 @@ import org.springframework.stereotype.Service;
 import ru.javavlsu.kb.esap.dto.notifications.NotificationMessage;
 import ru.javavlsu.kb.esap.dto.notifications.TokenRequest;
 import ru.javavlsu.kb.esap.exception.NotFoundException;
+import ru.javavlsu.kb.esap.model.TokenStatus;
 import ru.javavlsu.kb.esap.model.User;
 import ru.javavlsu.kb.esap.model.UserDeviceToken;
 import ru.javavlsu.kb.esap.repository.UserDeviceTokenRepository;
 import ru.javavlsu.kb.esap.repository.UserRepository;
-import ru.javavlsu.kb.esap.util.KafkaProducer;
+import ru.javavlsu.kb.esap.kafka.KafkaProducer;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserDeviceTokenService {
@@ -35,8 +37,16 @@ public class UserDeviceTokenService {
             UserDeviceToken deviceToken = new UserDeviceToken();
             deviceToken.setToken(tokenValue);
             deviceToken.setUser(user);
+            deviceToken.setStatus(TokenStatus.ACTIVE);
             userDeviceTokenRepository.save(deviceToken);
         }
+    }
+
+    public void disableToken(String token) {
+        UserDeviceToken deviceToken = userDeviceTokenRepository.findUserDeviceTokenByToken(token)
+                .orElseThrow(() -> new NotFoundException("Token=" + token + " not found"));
+        deviceToken.setStatus(TokenStatus.INACTIVE);
+        userDeviceTokenRepository.save(deviceToken);
     }
 
     @Scheduled(fixedDelay = 60000)
@@ -45,12 +55,14 @@ public class UserDeviceTokenService {
         for (var user: users) {
             List<UserDeviceToken> userDevices = userDeviceTokenRepository.getUserDeviceTokensByUser(user);
             for (var userDevice : userDevices) {
-                NotificationMessage messageToUserDevice = new NotificationMessage();
-                messageToUserDevice.setTo(userDevice.getToken());
-                messageToUserDevice.setTitle("ESAP");
-                messageToUserDevice.setBody("Time " + LocalTime.now());
+                if (userDevice.getStatus() == TokenStatus.ACTIVE) {
+                    NotificationMessage messageToUserDevice = new NotificationMessage();
+                    messageToUserDevice.setTo(userDevice.getToken());
+                    messageToUserDevice.setTitle("ESAP");
+                    messageToUserDevice.setBody("Time " + LocalTime.now());
 
-                kafkaProducer.sendUserDeviceNotification(messageToUserDevice);
+                    kafkaProducer.sendUserDeviceNotification(messageToUserDevice);
+                }
             }
         }
     }

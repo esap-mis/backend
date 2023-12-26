@@ -21,7 +21,7 @@ import ru.javavlsu.kb.esap.repository.MedicalCardRepository;
 import ru.javavlsu.kb.esap.repository.PatientRepository;
 import ru.javavlsu.kb.esap.exception.NotFoundException;
 import ru.javavlsu.kb.esap.repository.RoleRepository;
-import ru.javavlsu.kb.esap.util.KafkaProducer;
+import ru.javavlsu.kb.esap.kafka.KafkaProducer;
 import ru.javavlsu.kb.esap.util.LoginPasswordGenerator;
 
 import java.util.HashSet;

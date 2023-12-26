@@ -1,8 +1,9 @@
-package ru.javavlsu.kb.esap.util;
+package ru.javavlsu.kb.esap.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -29,13 +30,17 @@ public class KafkaProducer {
 
     public void sendPatientData(User user) throws JsonProcessingException {
         String message = objectMapper.writeValueAsString(user);
-        kafkaTemplate.send(mailTopic, message);
+        ProducerRecord<String, String> record = new ProducerRecord<>(mailTopic, message);
+        record.headers().add("type", MessageType.COMMAND.name().getBytes());
+        kafkaTemplate.send(record);
         log.info("Send data for patient {id=" + user.getId() + "}");
     }
 
     public void sendUserDeviceNotification(NotificationMessage notification) throws JsonProcessingException {
         String message = objectMapper.writeValueAsString(notification);
-        kafkaTemplate.send(notificationsTopic, message);
+        ProducerRecord<String, String> record = new ProducerRecord<>(notificationsTopic, message);
+        record.headers().add("type", MessageType.COMMAND.name().getBytes());
+        kafkaTemplate.send(record);
         log.info("Send notification to user device {token=" + notification.getTo() + "}");
     }
 }

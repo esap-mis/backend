@@ -20,5 +20,8 @@ public class UserDeviceToken {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Enumerated(EnumType.STRING)
+    private TokenStatus status;
 }
 
