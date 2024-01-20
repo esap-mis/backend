@@ -1,11 +1,11 @@
 package ru.javavlsu.kb.esap.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,46 +13,44 @@ import ru.javavlsu.kb.esap.dto.PatientDTO;
 import ru.javavlsu.kb.esap.dto.PatientStatisticsByAgeDTO;
 import ru.javavlsu.kb.esap.dto.PatientStatisticsByGenderDTO;
 import ru.javavlsu.kb.esap.dto.ScheduleResponseDTO.PatientResponseDTO;
+import ru.javavlsu.kb.esap.dto.notifications.NotificationMessage;
 import ru.javavlsu.kb.esap.mapper.PatientMapper;
-import ru.javavlsu.kb.esap.model.Clinic;
-import ru.javavlsu.kb.esap.model.MedicalCard;
-import ru.javavlsu.kb.esap.model.Patient;
-import ru.javavlsu.kb.esap.repository.MedicalCardRepository;
+import ru.javavlsu.kb.esap.model.*;
 import ru.javavlsu.kb.esap.repository.PatientRepository;
 import ru.javavlsu.kb.esap.exception.NotFoundException;
 import ru.javavlsu.kb.esap.repository.RoleRepository;
 import ru.javavlsu.kb.esap.kafka.KafkaProducer;
 import ru.javavlsu.kb.esap.util.LoginPasswordGenerator;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
 public class PatientService {
 
     private final PatientRepository patientRepository;
-    private final MedicalCardRepository medicalCardRepository;
     private final PatientMapper patientMapper;
     private final Logger log = LoggerFactory.getLogger(PatientService.class);
     private final LoginPasswordGenerator lpg;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final KafkaProducer kafkaProducer;
+    private final NotificationService notificationService;
+    private final AppointmentService appointmentService;
 
-    public PatientService(PatientRepository patientRepository, MedicalCardRepository medicalCardRepository, PatientMapper patientMapper, LoginPasswordGenerator lpg, PasswordEncoder passwordEncoder, RoleRepository roleRepository, KafkaProducer kafkaProducer) {
-        this.medicalCardRepository = medicalCardRepository;
+    public PatientService(PatientRepository patientRepository, PatientMapper patientMapper, LoginPasswordGenerator lpg, PasswordEncoder passwordEncoder, RoleRepository roleRepository, KafkaProducer kafkaProducer, NotificationService notificationService, AppointmentService appointmentService) {
         this.patientMapper = patientMapper;
         this.patientRepository = patientRepository;
         this.lpg = lpg;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.kafkaProducer = kafkaProducer;
-    }
-
-    public List<PatientResponseDTO> getAll() {
-        List<Patient> patients = patientRepository.findAll();
-        return patientMapper.toPatientResponseDTOList(patients);
+        this.notificationService = notificationService;
+        this.appointmentService = appointmentService;
     }
 
     public int getPatientCountByClinic(Clinic clinic) {
@@ -85,7 +83,7 @@ public class PatientService {
     }
 
     @Transactional
-    public Patient create(PatientDTO patientDTO, Clinic clinic) throws JsonProcessingException {
+    public Patient create(PatientDTO patientDTO, Clinic clinic) {
         Patient patient = patientMapper.toPatient(patientDTO);
         patient.setClinic(clinic);
         patient.setMedicalCard(new MedicalCard(patient));
@@ -127,7 +125,6 @@ public class PatientService {
     }
 
     public PatientStatisticsByGenderDTO getPatientsStatisticsByGender(Clinic clinic) {
-        long c = clinic.getId();
         log.debug("class:PatientService, method:getPatientsStatisticsByGender, sql:getPatientsCountByGenderAndClinic. x2");
         int malePatients = patientRepository.getPatientsCountByGenderAndClinic(1, clinic);
         int femalePatients = patientRepository.getPatientsCountByGenderAndClinic(2, clinic);
@@ -156,5 +153,32 @@ public class PatientService {
 
     public Patient getByLogin(String login) {
         return patientRepository.findByLogin(login).orElseThrow(() -> new NotFoundException("Patient not found"));
+    }
+
+    @Scheduled(fixedDelay = 60 * 60 * 1000)
+    public void sendUpcomingAppointmentReminders() {
+        NotificationMessage message = NotificationMessage.builder()
+                .title("Напоминание о визите!")
+                .body("Уважаемый пациент, напоминаем вам о предстоящем визите в нашу поликлинику")
+                .build();
+
+        List<Patient> patients = patientRepository.findAll();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
+        for (Patient patient : patients) {
+            Optional<Appointment> upcomingAppointment = appointmentService.getUpcomingAppointmentByPatient(patient);
+            if (upcomingAppointment.isPresent()) {
+                LocalDateTime formattedDateTime = upcomingAppointment.get().getDate()
+                        .atTime(upcomingAppointment.get().getStartAppointments());
+
+                String messageBody = message.getBody() + String.format(" \"%s\". Дата и время визита: %s. По адресу: %s.",
+                        patient.getClinic().getName(), formattedDateTime.format(formatter), patient.getClinic().getAddress());
+                message.setBody(messageBody);
+
+                notificationService.sendNotificationToUser(patient, message);
+            } else {
+                log.debug("Patient ID {} has no upcoming appointments", patient.getId());
+            }
+        }
     }
 }

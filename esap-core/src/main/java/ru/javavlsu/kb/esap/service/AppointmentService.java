@@ -19,7 +19,9 @@ import ru.javavlsu.kb.esap.exception.NotCreateException;
 import ru.javavlsu.kb.esap.exception.NotFoundException;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -85,5 +87,11 @@ public class AppointmentService {
     public List<PatientAppointmentDTO> getAppointmentsForUser(Patient patient) {
         List<Appointment> appointments = appointmentRepository.findByPatient(patient);
         return appointmentMapper.toPatientAppointmentDTOList(appointments);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Appointment> getUpcomingAppointmentByPatient(Patient patient) {
+        return appointmentRepository.findUpcomingAppointmentByPatient(
+                patient, LocalDate.now(), LocalTime.now());
     }
 }

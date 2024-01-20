@@ -28,19 +28,28 @@ public class KafkaProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendPatientData(User user) throws JsonProcessingException {
-        String message = objectMapper.writeValueAsString(user);
-        ProducerRecord<String, String> record = new ProducerRecord<>(mailTopic, message);
+    private void sendMessageToKafka(Object data, String topic, String logMessage) {
+        String message;
+        try {
+            message = objectMapper.writeValueAsString(data);
+        } catch (JsonProcessingException e) {
+            log.error("Error parsing to JSON", e);
+            throw new IllegalArgumentException("Error parsing to JSON", e);
+        }
+
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, message);
         record.headers().add("type", MessageType.COMMAND.name().getBytes());
         kafkaTemplate.send(record);
-        log.info("Send data for patient {id=" + user.getId() + "}");
+        log.info(logMessage);
     }
 
-    public void sendUserDeviceNotification(NotificationMessage notification) throws JsonProcessingException {
-        String message = objectMapper.writeValueAsString(notification);
-        ProducerRecord<String, String> record = new ProducerRecord<>(notificationsTopic, message);
-        record.headers().add("type", MessageType.COMMAND.name().getBytes());
-        kafkaTemplate.send(record);
-        log.info("Send notification to user device {token=" + notification.getTo() + "}");
+    public void sendPatientData(User user) {
+        String logMessage = "Send data for patient {id=" + user.getId() + "}";
+        sendMessageToKafka(user, mailTopic, logMessage);
+    }
+
+    public void sendUserDeviceNotification(NotificationMessage notification) {
+        String logMessage = "Send notification to user device {token=" + notification.getTo() + "}";
+        sendMessageToKafka(notification, notificationsTopic, logMessage);
     }
 }

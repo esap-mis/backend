@@ -2,6 +2,7 @@ package ru.javavlsu.kb.esap.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.javavlsu.kb.esap.dto.notifications.NotificationMessage;
 import ru.javavlsu.kb.esap.model.Doctor;
 import ru.javavlsu.kb.esap.model.MedicalCard;
 import ru.javavlsu.kb.esap.model.MedicalRecord;
@@ -18,12 +19,14 @@ import java.util.List;
 public class MedicalCardService {
     private final MedicalCardRepository medicalCardRepository;
     private final MedicalRecordRepository medicalRecordRepository;
+    private final NotificationService notificationService;
 
     private static final String DEFAULT_ANALYSIS_RESULT = "Не готов";
 
-    public MedicalCardService(MedicalCardRepository medicalCardRepository, MedicalRecordRepository medicalRecordRepository) {
+    public MedicalCardService(MedicalCardRepository medicalCardRepository, MedicalRecordRepository medicalRecordRepository, NotificationService notificationService) {
         this.medicalCardRepository = medicalCardRepository;
         this.medicalRecordRepository = medicalRecordRepository;
+        this.notificationService = notificationService;
     }
 
     //TODO Убрать метод или заменить (используется только для соранения medicalRecord)
@@ -57,6 +60,17 @@ public class MedicalCardService {
             analysis.setResult(DEFAULT_ANALYSIS_RESULT);
             analysis.setDate(LocalDateTime.now());
         });
-        medicalRecordRepository.save(medicalRecord);
+        MedicalRecord record = medicalRecordRepository.save(medicalRecord);
+        sendMedicalRecordAddReminder(record, doctor);
+    }
+
+    private void sendMedicalRecordAddReminder(MedicalRecord medicalRecord, Doctor doctor) {
+        NotificationMessage message = NotificationMessage.builder()
+                .title("Время проверить медицинскую карту")
+                .body(String.format("%s добавил новую запись в вашу медицинскую карту. Пожалуйста, проверьте результаты.",
+                        doctor.getFio()))
+                .build();
+
+        notificationService.sendNotificationToUser(medicalRecord.getMedicalCard().getPatient(), message);
     }
 }

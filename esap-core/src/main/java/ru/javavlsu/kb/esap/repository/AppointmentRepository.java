@@ -11,6 +11,7 @@ import ru.javavlsu.kb.esap.model.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
 
@@ -29,6 +30,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     List<Appointment> findByStartAppointmentsAndDateAndSchedule(LocalTime startAppointment, LocalDate date, Schedule schedule);
 
-    @Query("SELECT a FROM Appointment a WHERE (a.date = :currentDate AND a.schedule.doctor = :doctor) OR (a.date < :currentDate AND a.schedule.doctor = :doctor) ORDER BY a.date DESC, a.startAppointments DESC")
+    @Query("SELECT a FROM Appointment a WHERE (a.date = :currentDate " +
+            "AND a.schedule.doctor = :doctor) OR (a.date < :currentDate AND a.schedule.doctor = :doctor) " +
+            "ORDER BY a.date DESC, a.startAppointments DESC")
     Page<Appointment> findLatestAppointments(@Param("doctor") Doctor doctor, @Param("currentDate") LocalDate currentDate, Pageable pageable);
+
+    @Query("SELECT a FROM Appointment a WHERE a.patient = :patient " +
+            "AND (a.date > :today OR (a.date = :today AND a.startAppointments >= :currentTime)) " +
+            "ORDER BY a.date ASC, a.startAppointments ASC")
+    Optional<Appointment> findUpcomingAppointmentByPatient(
+            @Param("patient") Patient patient,
+            @Param("today") LocalDate today,
+            @Param("currentTime") LocalTime currentTime
+    );
 }
