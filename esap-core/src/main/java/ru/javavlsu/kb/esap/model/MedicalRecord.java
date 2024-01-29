@@ -19,7 +19,7 @@ import java.util.Objects;
 @Setter
 @ToString
 @Table(name = "medical_record")
-public class MedicalRecord implements Attachable {
+public class MedicalRecord {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,7 +47,7 @@ public class MedicalRecord implements Attachable {
     @JsonIgnore
     private MedicalCard medicalCard;
 
-    @OneToMany(mappedBy = "attachment", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL)
     private List<Document> documents;
 
     @Override
