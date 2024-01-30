@@ -34,7 +34,7 @@ public class FileController {
         FileResponseDTO response = FileResponseDTO.builder()
                 .fileName(document.getFileName())
                 .downloadUrl(downloadUrl)
-                .fileType(document.getType())
+                .fileType(document.getFileType().toString())
                 .fileSize(document.getSize())
                 .build();
         return ResponseEntity.ok(response);
@@ -50,12 +50,8 @@ public class FileController {
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
-        try {
-            fileService.delete(id);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id) throws IOException {
+        fileService.delete(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

@@ -22,11 +22,9 @@ public class Document {
     @Column(name = "file_name")
     private String fileName;
 
-    @Column(name = "type")
-    private String type;
-
-//    @Column(name = "path")
-//    private String path;
+    @Column(name = "file_type")
+    @Enumerated(EnumType.STRING)
+    private FileType fileType;
 
     @Column(name = "key")
     private String key;
@@ -45,12 +43,12 @@ public class Document {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Document document = (Document) o;
-        return Objects.equals(id, document.id) && Objects.equals(fileName, document.fileName) && Objects.equals(type, document.type) && Objects.equals(key, document.key) && Objects.equals(size, document.size) && Objects.equals(uploadDate, document.uploadDate) && Objects.equals(medicalRecord, document.medicalRecord);
+        return Objects.equals(id, document.id) && Objects.equals(fileName, document.fileName) && Objects.equals(fileType, document.fileType) && Objects.equals(key, document.key) && Objects.equals(size, document.size) && Objects.equals(uploadDate, document.uploadDate) && Objects.equals(medicalRecord, document.medicalRecord);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, fileName, type, key, size, uploadDate, medicalRecord);
+        return Objects.hash(id, fileName, fileType, key, size, uploadDate, medicalRecord);
     }
 }
 

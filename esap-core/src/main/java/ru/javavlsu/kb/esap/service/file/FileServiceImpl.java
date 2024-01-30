@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 import ru.javavlsu.kb.esap.exception.NotFoundException;
 import ru.javavlsu.kb.esap.model.Document;
+import ru.javavlsu.kb.esap.model.FileType;
 import ru.javavlsu.kb.esap.model.MedicalRecord;
 import ru.javavlsu.kb.esap.repository.DocumentRepository;
 import ru.javavlsu.kb.esap.repository.MedicalRecordRepository;
@@ -51,7 +52,7 @@ public class FileServiceImpl implements FileService  {
                     .fileName(fileNameInfo[0])
                     .key(key)
                     .size(file.getSize())
-                    .type(fileNameInfo[1])
+                    .fileType(FileType.getFromString(fileNameInfo[1]))
                     .uploadDate(LocalDate.now())
                     .medicalRecord(medicalRecord)
                     .build();
@@ -77,9 +78,8 @@ public class FileServiceImpl implements FileService  {
         Document file = documentRepository.findDocumentByKey(key)
                 .orElseThrow(() -> new NotFoundException("Document not found"));
 
-        String fileExtension = file.getType();
-
-        File newFile = File.createTempFile(key, "." + fileExtension);
+        String fileExtension = file.getFileType().toString();
+        File newFile = File.createTempFile(key, "." + fileExtension.toLowerCase());
         try (InputStream inputStream = resource.getInputStream();
              OutputStream outputStream = new FileOutputStream(newFile)) {
             byte[] buffer = new byte[1024];
@@ -90,13 +90,6 @@ public class FileServiceImpl implements FileService  {
         }
 
         return new FileSystemResource(newFile);
-    }
-
-
-    @Override
-    public Resource download(String key, String fileType) throws IOException {
-        Resource resource = fileManager.download(key);
-        return resource;
     }
 
     @Override
