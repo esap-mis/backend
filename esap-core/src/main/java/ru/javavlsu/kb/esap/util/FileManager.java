@@ -34,7 +34,7 @@ public class FileManager {
     }
 
     public void delete(String key) throws IOException {
-        Path path = Paths.get(DIRECTORY_PATH + key);
+        Path path = Paths.get(DIRECTORY_PATH, key);
         Files.delete(path);
     }
 }
