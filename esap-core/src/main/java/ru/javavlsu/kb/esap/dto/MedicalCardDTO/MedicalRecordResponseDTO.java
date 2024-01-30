@@ -20,4 +20,6 @@ public class MedicalRecordResponseDTO {
 
     private List<AnalysisResponseDTO> analyzes;
 
+    private List<String> documents;
+
 }

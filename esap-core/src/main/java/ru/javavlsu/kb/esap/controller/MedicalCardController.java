@@ -39,6 +39,7 @@ public class MedicalCardController {
                 .getMedicalCardByPatientAndMedicalRecordSpecializationDoctor(patientService.getById(id), specializationDoctor);
 //        medicalCard.setMedicalRecord(medicalCardService.getMedicalRecordByMedicalCard(medicalCard));
 //        medicalCard.getMedicalRecord().sort(MedicalRecord::sortByDateDesc);
+
         return medicalCardMapper.toMedicalCard(medicalCard);
     }
 

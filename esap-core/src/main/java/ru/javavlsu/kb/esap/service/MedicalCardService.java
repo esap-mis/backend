@@ -3,10 +3,8 @@ package ru.javavlsu.kb.esap.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.javavlsu.kb.esap.dto.notifications.NotificationMessage;
-import ru.javavlsu.kb.esap.model.Doctor;
-import ru.javavlsu.kb.esap.model.MedicalCard;
-import ru.javavlsu.kb.esap.model.MedicalRecord;
-import ru.javavlsu.kb.esap.model.Patient;
+import ru.javavlsu.kb.esap.model.*;
+import ru.javavlsu.kb.esap.repository.DocumentRepository;
 import ru.javavlsu.kb.esap.repository.MedicalCardRepository;
 import ru.javavlsu.kb.esap.repository.MedicalRecordRepository;
 import ru.javavlsu.kb.esap.exception.NotFoundException;
@@ -20,13 +18,15 @@ public class MedicalCardService {
     private final MedicalCardRepository medicalCardRepository;
     private final MedicalRecordRepository medicalRecordRepository;
     private final NotificationService notificationService;
+    private final DocumentRepository documentRepository;
 
     private static final String DEFAULT_ANALYSIS_RESULT = "Не готов";
 
-    public MedicalCardService(MedicalCardRepository medicalCardRepository, MedicalRecordRepository medicalRecordRepository, NotificationService notificationService) {
+    public MedicalCardService(MedicalCardRepository medicalCardRepository, MedicalRecordRepository medicalRecordRepository, NotificationService notificationService, DocumentRepository documentRepository) {
         this.medicalCardRepository = medicalCardRepository;
         this.medicalRecordRepository = medicalRecordRepository;
         this.notificationService = notificationService;
+        this.documentRepository = documentRepository;
     }
 
     //TODO Убрать метод или заменить (используется только для соранения medicalRecord)
