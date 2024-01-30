@@ -3,6 +3,7 @@ package ru.javavlsu.kb.esap.service.file;
 import jakarta.transaction.Transactional;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -15,7 +16,7 @@ import ru.javavlsu.kb.esap.repository.DocumentRepository;
 import ru.javavlsu.kb.esap.repository.MedicalRecordRepository;
 import ru.javavlsu.kb.esap.util.FileManager;
 
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -43,16 +44,14 @@ public class FileServiceImpl implements FileService  {
             if (fileName.contains("..")) {
                 throw new IOException("Filename contains invalid path sequence " + fileName);
             }
-            if (file.getBytes().length > (1024 * 1024)) {
-                throw new IOException("File size exceeds maximum limit");
-            }
             MedicalRecord medicalRecord = medicalRecordRepository.findById(recordId)
                     .orElseThrow(() -> new NotFoundException("Medical record not found"));
+            String[] fileNameInfo = fileName.split("\\.");
             Document attachment = Document.builder()
-                    .fileName(fileName)
+                    .fileName(fileNameInfo[0])
                     .key(key)
                     .size(file.getSize())
-                    .type(file.getContentType())
+                    .type(fileNameInfo[1])
                     .uploadDate(LocalDate.now())
                     .medicalRecord(medicalRecord)
                     .build();
@@ -74,7 +73,30 @@ public class FileServiceImpl implements FileService  {
 
     @Override
     public Resource download(String key) throws IOException {
-        return fileManager.download(key);
+        Resource resource = fileManager.download(key);
+        Document file = documentRepository.findDocumentByKey(key)
+                .orElseThrow(() -> new NotFoundException("Document not found"));
+
+        String fileExtension = file.getType();
+
+        File newFile = File.createTempFile(key, "." + fileExtension);
+        try (InputStream inputStream = resource.getInputStream();
+             OutputStream outputStream = new FileOutputStream(newFile)) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+        }
+
+        return new FileSystemResource(newFile);
+    }
+
+
+    @Override
+    public Resource download(String key, String fileType) throws IOException {
+        Resource resource = fileManager.download(key);
+        return resource;
     }
 
     @Override
