@@ -96,6 +96,27 @@ services:
     depends_on:
       - "kafka"
 
+  ollama:
+    volumes:
+      - ollama:/root/.ollama
+    container_name: ollama
+    pull_policy: always
+    tty: true
+    restart: unless-stopped
+    image: ollama/ollama:latest
+    ports:
+      - ${OLLAMA_WEBAPI_PORT-11434}:11434
+    # GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: ${OLLAMA_GPU_DRIVER-nvidia}
+              count: ${OLLAMA_GPU_COUNT-1}
+              capabilities:
+                - gpu
+    command: ollama run medllama2
+
 networks:
   kafka-net:
     name: kafka-net
@@ -104,3 +125,4 @@ networks:
 volumes:
   db-data:
   pgadmin-data:
+  ollama:
