@@ -1,48 +1,56 @@
+name: esap-mis
 version: '3.8'
 
 services:
-#  db:
-#    container_name: db
-#    image: postgres:14.7-alpine
-#    environment:
-#      - POSTGRES_USER=postgres
-#      - POSTGRES_PASSWORD=postgres
-#      - POSTGRES_DB=esap
-#    ports: ["15432:5432"]
-#    volumes:
-#      - db-data:/var/lib/postgresql/data
-#    command: >
-#      bash -c '
-#        echo "CREATE DATABASE esap;" > /docker-entrypoint-initdb.d/init_db.sql
-#        echo "\c esap;" >> /docker-entrypoint-initdb.d/init_db.sql
-#        exec docker-entrypoint.sh postgres
-#      '
-#    restart: unless-stopped
-#
-#  frontend:
-#    container_name: frontend
-#    build:
-#      context: frontend/esap-admin
-#      dockerfile: /Dockerfile
-#    ports: ["3000:3000"]
-#    volumes:
-#      - /app/node_modules
-#      - ./frontend/esap-admin:/app
-#
-#  esap-core:
-#    container_name: esap-core
-#    build:
-#      context: backend/esap-core
-#      dockerfile: /Dockerfile
-#    restart: always
-#    ports: ["8080:8080"]
-#    environment:
-#      - SERVER_PORT= 8080
-#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/esap
-#      - SPRING_DATASOURCE_USERNAME=postgres
-#      - SPRING_DATASOURCE_PASSWORD=postgres
-#      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
-#
+  db:
+    container_name: db
+    image: postgres:14.7-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=esap
+    ports: ["15432:5432"]
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    command: >
+      bash -c '
+        echo "CREATE DATABASE esap;" > /docker-entrypoint-initdb.d/init_db.sql
+        echo "\c esap;" >> /docker-entrypoint-initdb.d/init_db.sql
+        exec docker-entrypoint.sh postgres
+      '
+    restart: "no"
+    networks:
+      - kafka-net
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ../frontend
+      dockerfile: /Dockerfile
+    ports: ["3000:3000"]
+    volumes:
+      - /app/node_modules
+      - ../frontend:/app
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+
+  esap-core:
+    container_name: esap-core
+    build:
+      context: ../backend/esap-core
+      dockerfile: /Dockerfile
+    restart: "no"
+    ports: ["8080:8080"]
+    environment:
+      - SERVER_PORT=8080
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/esap
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    networks:
+      - kafka-net
+
 #  pgadmin:
 #    container_name: pgadmin4_container
 #    image: dpage/pgadmin4:7
@@ -83,39 +91,51 @@ services:
     depends_on:
       - zookeeper
 
-  kafka-ui:
-    image: obsidiandynamics/kafdrop
-    container_name: kafka-ui
+#  kafka-ui:
+#    image: obsidiandynamics/kafdrop
+#    container_name: kafka-ui
+#    restart: "no"
+#    networks:
+#      - kafka-net
+#    ports:
+#      - "9000:9000"
+#    environment:
+#      KAFKA_BROKERCONNECT: "kafka:29092"
+#    depends_on:
+#      - "kafka"
+
+  notification-service:
+    container_name: notification-service
+    build:
+      context: ../backend/notification-service
+      dockerfile: /Dockerfile
     restart: "no"
+    ports: [ "8083:8083" ]
+    environment:
+      - server.port=8082
+      - spring.kafka.bootstrap-servers=kafka:29092
     networks:
       - kafka-net
-    ports:
-      - "9000:9000"
-    environment:
-      KAFKA_BROKERCONNECT: "kafka:29092"
-    depends_on:
-      - "kafka"
 
-  ollama:
-    volumes:
-      - ollama:/root/.ollama
-    container_name: ollama
-    pull_policy: always
-    tty: true
-    restart: unless-stopped
-    image: ollama/ollama:latest
-    ports:
-      - ${OLLAMA_WEBAPI_PORT-11434}:11434
-    # GPU support
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: ${OLLAMA_GPU_DRIVER-nvidia}
-              count: ${OLLAMA_GPU_COUNT-1}
-              capabilities:
-                - gpu
-    command: ollama run medllama2
+#  ollama:
+#    volumes:
+#      - ollama:/root/.ollama
+#    container_name: ollama
+#    pull_policy: always
+#    tty: true
+#    restart: unless-stopped
+#    image: ollama/ollama:latest
+#    ports:
+#      - ${OLLAMA_WEBAPI_PORT-11434}:11434
+#    # GPU support
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: ${OLLAMA_GPU_DRIVER-nvidia}
+#              count: ${OLLAMA_GPU_COUNT-1}
+#              capabilities:
+#                - gpu
 
 networks:
   kafka-net:
