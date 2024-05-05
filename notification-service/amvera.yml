@@ -1,0 +1,12 @@
+meta:
+  environment: jvm
+  toolchain:
+    name: maven
+    version: 17
+
+build:
+  args: clean install spring-boot:repackage -Pproduction -DskipTests
+
+run:
+  jarName: notification-service-1.0.0.jar
+  containerPort: 8080
