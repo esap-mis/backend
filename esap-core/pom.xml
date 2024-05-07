@@ -12,7 +12,7 @@
 
 	<groupId>ru.javavlsu.kb</groupId>
 	<artifactId>esap-core</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>esap-core</name>
 	<packaging>jar</packaging>
 	<description>esap-core</description>
