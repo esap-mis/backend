@@ -58,7 +58,7 @@ public class MedicalCardService {
         medicalRecord.getAnalyzes().forEach(analysis -> {
             analysis.setMedicalRecord(medicalRecord);
             analysis.setResult(DEFAULT_ANALYSIS_RESULT);
-            analysis.setDate(LocalDateTime.now());
+            analysis.setDate(LocalDateTime.now().withNano(0));
         });
         MedicalRecord record = medicalRecordRepository.save(medicalRecord);
         sendMedicalRecordAddReminder(record, doctor);
