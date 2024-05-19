@@ -127,7 +127,7 @@ services:
 
   notification-service:
     container_name: notification-service
-    image: esapmis/notification-service
+    image: esapmis/notification-service:1.0.0
     restart: "no"
     ports: [ "8083:8083" ]
     environment:
