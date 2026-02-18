@@ -24,7 +24,7 @@ repositories {
     maven { url = uri("https://repo.spring.io/milestone") }
 }
 
-extra["springAiVersion"] = "0.8.0"
+extra["springAiVersion"] = "1.1.2"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -33,7 +33,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.flywaydb:flyway-core")
-    implementation("org.springframework.ai:spring-ai-ollama-spring-boot-starter")
+    implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.springframework.kafka:spring-kafka")
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("org.postgresql:postgresql")
@@ -45,6 +45,14 @@ dependencies {
     implementation("org.modelmapper:modelmapper:3.1.1")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4")
     implementation("com.auth0:java-jwt:4.3.0")
+
+    // AI
+//    implementation("org.springframework.ai:spring-ai-ollama-spring-boot-starter")
+//    implementation("org.springframework.ai:spring-ai-starter-model-openai")
+//    implementation("org.springframework.ai:spring-ai-starter-model-deepseek")
+//    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc")
+//    implementation("org.springframework.ai:spring-ai-starter-model-google-genai")
+    implementation("chat.giga:spring-ai-starter-model-gigachat:${property("springAiVersion")}")
 }
 
 dependencyManagement {
