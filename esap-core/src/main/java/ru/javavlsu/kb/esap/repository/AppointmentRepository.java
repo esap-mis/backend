@@ -43,4 +43,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("today") LocalDate today,
             @Param("currentTime") LocalTime currentTime
     );
+
+    @Query("SELECT a.startAppointments FROM Appointment a WHERE a.schedule.id = :scheduleId")
+    List<LocalTime> findStartTimesByScheduleId(@Param("scheduleId") Long scheduleId);
 }

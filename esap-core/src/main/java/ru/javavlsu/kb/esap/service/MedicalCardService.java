@@ -52,7 +52,7 @@ public class MedicalCardService {
 
     @Transactional
     public void createMedicalRecord(MedicalRecord medicalRecord, MedicalCard medicalCard, Doctor doctor) {
-        medicalRecord.setFioAndSpecializationDoctor(doctor.getSpecialization() + ": " + doctor.getFio());
+        medicalRecord.setFioAndSpecializationDoctor(doctor.getSpecialization() + ": " + doctor.getFullName());
         medicalRecord.setMedicalCard(medicalCard);
         medicalRecord.getAnalyzes().forEach(analysis -> analysis.setMedicalRecord(medicalRecord));
         medicalRecord.getAnalyzes().forEach(analysis -> {
@@ -68,7 +68,7 @@ public class MedicalCardService {
         NotificationMessage message = NotificationMessage.builder()
                 .title("Время проверить медицинскую карту")
                 .body(String.format("%s добавил новую запись в вашу медицинскую карту. Пожалуйста, проверьте результаты.",
-                        doctor.getFio()))
+                        doctor.getFullName()))
                 .build();
 
         notificationService.sendNotificationToUser(medicalRecord.getMedicalCard().getPatient(), message);

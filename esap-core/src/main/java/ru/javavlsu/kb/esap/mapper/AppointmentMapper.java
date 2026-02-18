@@ -28,6 +28,10 @@ public class AppointmentMapper {
         return modelMapper.map(appointment, AppointmentDTO.class);
     }
 
+    public AppointmentResponseDTO toAppointmentResponseDTO(Appointment appointment) {
+        return modelMapper.map(appointment, AppointmentResponseDTO.class);
+    }
+
     public List<AppointmentResponseDTO> toAppointmentResponseDTOList(List<Appointment> appointments) {
         return appointments.stream()
                 .map(appointment -> modelMapper.map(appointment, AppointmentResponseDTO.class))

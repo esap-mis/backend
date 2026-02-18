@@ -20,6 +20,7 @@ import ru.javavlsu.kb.esap.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,18 +34,20 @@ public class AppointmentService {
     private final AppointmentMapper appointmentMapper;
     private final DoctorService doctorService;
     private final EntityManager em;
+    private final ScheduleService scheduleService;
 
-    public AppointmentService(AppointmentRepository appointmentRepository, ScheduleRepository scheduleRepository, PatientRepository patientRepository, AppointmentMapper appointmentMapper, DoctorService doctorService, EntityManager em) {
+    public AppointmentService(AppointmentRepository appointmentRepository, ScheduleRepository scheduleRepository, PatientRepository patientRepository, AppointmentMapper appointmentMapper, DoctorService doctorService, EntityManager em, ScheduleService scheduleService) {
         this.appointmentRepository = appointmentRepository;
         this.scheduleRepository = scheduleRepository;
         this.patientRepository = patientRepository;
         this.appointmentMapper = appointmentMapper;
         this.doctorService = doctorService;
         this.em = em;
+        this.scheduleService = scheduleService;
     }
 
     @Transactional
-    public void create(AppointmentDTO appointmentDTO, long scheduleId) throws NotCreateException {
+    public AppointmentResponseDTO create(AppointmentDTO appointmentDTO, long scheduleId) throws NotCreateException {
         Appointment appointment = appointmentMapper.toAppointment(appointmentDTO);
         appointment.setEndAppointments(appointmentDTO.startAppointments().plusMinutes(30));
         Schedule schedule = scheduleRepository.findById(scheduleId)
@@ -62,7 +65,8 @@ public class AppointmentService {
                 .orElseThrow(() -> new NotFoundException("Patient not found"));
         appointment.setPatient(patient);
         appointment.setDoctor(doctorService.refreshDoctor(schedule.getDoctor()));
-        appointmentRepository.save(appointment);
+        final Appointment savedAppointment = appointmentRepository.save(appointment);
+        return appointmentMapper.toAppointmentResponseDTO(savedAppointment);
     }
 
     @Transactional(readOnly = true)
@@ -93,5 +97,26 @@ public class AppointmentService {
     public Optional<Appointment> getUpcomingAppointmentByPatient(Patient patient) {
         return appointmentRepository.findUpcomingAppointmentByPatient(
                 patient, LocalDate.now(), LocalTime.now());
+    }
+
+    @Transactional(readOnly = true)
+    public List<LocalTime> findAvailableAppointments(Long doctorId, LocalDate date) {
+        final Schedule schedule = scheduleService.getDoctorScheduleByDate(doctorId, date);
+        final List<LocalTime> bookedTimes = appointmentRepository.findStartTimesByScheduleId(schedule.getId());
+        final List<LocalTime> allSlots = generateTimeSlots(schedule.getStartDoctorAppointment(), schedule.getEndDoctorAppointment());
+        return allSlots.stream()
+                .filter(slot -> !bookedTimes.contains(slot))
+                .limit(schedule.getMaxPatientPerDay() - bookedTimes.size())
+                .toList();
+    }
+
+    private List<LocalTime> generateTimeSlots(LocalTime start, LocalTime end) {
+        final List<LocalTime> slots = new ArrayList<>();
+        LocalTime current = start;
+        while (current.isBefore(end)) {
+            slots.add(current);
+            current = current.plusMinutes(30);
+        }
+        return slots;
     }
 }

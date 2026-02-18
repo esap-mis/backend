@@ -39,4 +39,8 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     int countPatientsByAgeRangeAndClinic(@Param("minAge") int minAge, @Param("maxAge") int maxAge, @Param("clinic") Clinic clinic);
 
     Optional<Patient> findByLogin(String login);
+
+    @Query("SELECT p FROM Patient p WHERE " +
+            "LOWER(CONCAT(p.lastName, ' ', p.firstName, ' ', p.patronymic)) LIKE LOWER(CONCAT('%', :fullName, '%'))")
+    List<Patient> findByFullName(@Param("fullName") String fullName);
 }

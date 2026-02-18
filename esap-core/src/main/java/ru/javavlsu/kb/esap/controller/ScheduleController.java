@@ -1,14 +1,12 @@
 package ru.javavlsu.kb.esap.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.javavlsu.kb.esap.dto.AppointmentsCountByDayDTO;
 import ru.javavlsu.kb.esap.dto.AppointmentDTO;
-import ru.javavlsu.kb.esap.dto.PatientAppointmentDTO;
 import ru.javavlsu.kb.esap.dto.ScheduleDTO;
 import ru.javavlsu.kb.esap.dto.ScheduleResponseDTO.AppointmentResponseDTO;
 import ru.javavlsu.kb.esap.dto.ScheduleResponseDTO.ScheduleResponseDTO;
@@ -65,13 +63,12 @@ public class ScheduleController {
     }
 
     @PostMapping("/{id}/appointment")
-    public ResponseEntity<HttpStatus> addAppointment(@PathVariable("id") Long id, @RequestBody @Valid AppointmentDTO appointmentDTO,
-                                                     BindingResult bindingResult) {
+    public ResponseEntity<AppointmentResponseDTO> addAppointment(@PathVariable("id") Long id, @RequestBody @Valid AppointmentDTO appointmentDTO,
+                                                         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new NotCreateException(ResponseMessageError.createErrorMsg(bindingResult.getFieldErrors()));
         }
-        appointmentService.create(appointmentDTO, id);
-        return ResponseEntity.ok(HttpStatus.OK);
+        return ResponseEntity.ok(appointmentService.create(appointmentDTO, id));
     }
 
     @GetMapping("/day")

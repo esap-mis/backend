@@ -130,4 +130,9 @@ public class ScheduleService {
         }
         throw new NotCreateException("Schedule already exists for the specified date and doctor");
     }
+
+    public Schedule getDoctorScheduleByDate(Long doctorId, LocalDate date) {
+        return scheduleRepository.findAllByDoctorAndDate(doctorId, date)
+                .orElseThrow(() -> new NotFoundException("Schedule not found for doctor with id=" + doctorId + " on date=" + date));
+    }
 }
