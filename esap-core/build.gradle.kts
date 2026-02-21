@@ -53,6 +53,7 @@ dependencies {
 //    implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc")
 //    implementation("org.springframework.ai:spring-ai-starter-model-google-genai")
     implementation("chat.giga:spring-ai-starter-model-gigachat:${property("springAiVersion")}")
+    implementation("org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc")
 }
 
 dependencyManagement {

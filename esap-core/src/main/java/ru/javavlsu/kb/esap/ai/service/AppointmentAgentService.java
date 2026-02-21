@@ -2,6 +2,7 @@ package ru.javavlsu.kb.esap.ai.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.SessionScope;
 import ru.javavlsu.kb.esap.model.Patient;
@@ -32,7 +33,7 @@ public class AppointmentAgentService {
         final String response = chatClient.prompt()
                 .user(message)
                 .advisors(advisor -> {
-                    advisor.param("conversation_id", conversationId);
+                    advisor.param(ChatMemory.CONVERSATION_ID, conversationId);
                     if (patientId != null) {
                         final Patient patient = patientService.getById(patientId);
                         advisor.param("patient_id", patientId);
