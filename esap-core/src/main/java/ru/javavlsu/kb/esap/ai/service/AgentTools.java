@@ -44,7 +44,18 @@ public class AgentTools {
     }
 
     @Tool(description = "Найти доступные места для записи к врачу по специальности и дате")
-    public List<LocalTime> findAvailableAppointments(@ToolParam(description = "Специальность врача (например: терапевт, хирург, окулист)") String specialization,
+    public List<LocalTime> findAvailableAppointmentsByFullName(@ToolParam(description = "Фамилия, имя или отчество врача") String fullName,
+                                                     @ToolParam(description = "Дата в формате ГГГГ-ММ-ДД") String date) {
+        log.info("Find available times for new appointment: fullName={}, date={}", fullName, date);
+        final LocalDate searchDate = LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
+        final List<DoctorResponseDTO> doctors = doctorService.findByFullName(fullName);
+        return doctors.stream()
+                .flatMap(doctor -> appointmentService.findAvailableAppointments(doctor.id(), searchDate).stream())
+                .toList();
+    }
+
+    @Tool(description = "Найти доступные места для записи к врачу по специальности и дате")
+    public List<LocalTime> findAvailableAppointmentsBySpec(@ToolParam(description = "Специальность врача (например: терапевт, хирург, окулист)") String specialization,
                                                      @ToolParam(description = "Дата в формате ГГГГ-ММ-ДД") String date) {
         log.info("Find available times for new appointment: specialization={}, date={}", specialization, date);
         final LocalDate searchDate = LocalDate.parse(date, DateTimeFormatter.ISO_DATE);
