@@ -20,6 +20,7 @@ import ru.javavlsu.kb.esap.mapper.ClinicMapper;
 import ru.javavlsu.kb.esap.mapper.DoctorMapper;
 import ru.javavlsu.kb.esap.model.Doctor;
 import ru.javavlsu.kb.esap.model.Patient;
+import ru.javavlsu.kb.esap.repository.RoleRepository;
 import ru.javavlsu.kb.esap.security.JWTUtil;
 import ru.javavlsu.kb.esap.security.UserDetails;
 import ru.javavlsu.kb.esap.service.DoctorService;
@@ -44,8 +45,9 @@ public class AuthController {
     private final UserUtils userUtils;
     private final UserService userService;
     private final PatientService patientService;
+    private final RoleRepository roleRepository;
 
-    public AuthController(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RegistrationService registrationService, ClinicMapper clinicMapper, DoctorMapper doctorMapper, DoctorService doctorService, UserUtils userUtils, UserService userService, PatientService patientService) {
+    public AuthController(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RegistrationService registrationService, ClinicMapper clinicMapper, DoctorMapper doctorMapper, DoctorService doctorService, UserUtils userUtils, UserService userService, PatientService patientService, RoleRepository roleRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.registrationService = registrationService;
@@ -55,6 +57,7 @@ public class AuthController {
         this.userUtils = userUtils;
         this.userService = userService;
         this.patientService = patientService;
+        this.roleRepository = roleRepository;
     }
 
     @PostMapping("/registration/clinic")
@@ -64,7 +67,7 @@ public class AuthController {
             throw new NotCreateException(ResponseMessageError.createErrorMsg(bindingResult.getFieldErrors()));
         }
         String[] loginPassword = registrationService.registrationClinic(clinicMapper.toClinic(clinicRegistrationDTO.clinic()),
-                doctorMapper.toDoctor(clinicRegistrationDTO.doctor()));
+                doctorMapper.toDoctor(clinicRegistrationDTO.doctor(), roleRepository));
         return Map.of("login", loginPassword[0], "password", loginPassword[1]);
     }
 

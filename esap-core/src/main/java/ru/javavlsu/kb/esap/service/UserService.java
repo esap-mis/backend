@@ -30,7 +30,7 @@ public class UserService {
         log.debug("class:UserService, method:getRoles, sql:findByLogin");
         return userRepository.findByLogin(login)
                 .orElseThrow(() -> new NotFoundException("User not found"))
-                .getRole().stream().map(Role::getName).toList();
+                .getRole().stream().map(role -> role.getName().name()).toList();
     }
 
 }
