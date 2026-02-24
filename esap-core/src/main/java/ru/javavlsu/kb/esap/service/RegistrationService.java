@@ -6,10 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.javavlsu.kb.esap.dto.auth.AuthenticationDTO;
 import ru.javavlsu.kb.esap.dto.auth.DoctorRegistration;
 import ru.javavlsu.kb.esap.mapper.DoctorMapper;
-import ru.javavlsu.kb.esap.model.Clinic;
-import ru.javavlsu.kb.esap.model.Doctor;
-import ru.javavlsu.kb.esap.model.Role;
-import ru.javavlsu.kb.esap.model.User;
+import ru.javavlsu.kb.esap.model.*;
 import ru.javavlsu.kb.esap.repository.ClinicRepository;
 import ru.javavlsu.kb.esap.repository.DoctorRepository;
 import ru.javavlsu.kb.esap.repository.RoleRepository;
@@ -50,7 +47,7 @@ public class RegistrationService {
         doctor.setPassword(passwordEncoder.encode(password));
         doctor.setClinic(clinic);
         doctor.setRole(new HashSet<>());
-        doctor.getRole().add(roleRepository.findByName("ROLE_CHIEF_DOCTOR")
+        doctor.getRole().add(roleRepository.findByName(RoleName.ROLE_CHIEF_DOCTOR)
                 .orElseThrow(() -> new NotFoundException("Role not found")));
         clinic.setUsers(Collections.singletonList(doctor));
         clinicRepository.save(clinic);
@@ -61,13 +58,10 @@ public class RegistrationService {
     public String[] registrationDoctor(DoctorRegistration doctorDTO, Clinic clinic) throws NotFoundException {
         String login = lpg.generateLogin();
         String password = lpg.generatePassword();
-        Doctor doctor = doctorMapper.toDoctor(doctorDTO);
+        Doctor doctor = doctorMapper.toDoctor(doctorDTO, roleRepository);
         doctor.setLogin(login);
         doctor.setPassword(passwordEncoder.encode(password));
         doctor.setClinic(clinic);
-        doctor.setRole(new HashSet<>());
-        doctor.getRole().add(roleRepository.findByName("ROLE_" + doctorDTO.getRole())
-                .orElseThrow(() -> new NotFoundException("Role not found")));
         doctorRepository.save(doctor);
         return new String[] {login, password};
     }
@@ -85,7 +79,7 @@ public class RegistrationService {
     public List<String> getAllRoles() {
         List<Role> roles = roleRepository.findAll();
         return roles.stream()
-                .map(role -> role.getName().replace("ROLE_", ""))
+                .map(role -> role.getName().withoutPrefix())
                 .collect(Collectors.toList());
     }
 }

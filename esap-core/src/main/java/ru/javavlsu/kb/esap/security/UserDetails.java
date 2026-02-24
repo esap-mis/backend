@@ -22,7 +22,7 @@ public class UserDetails implements org.springframework.security.core.userdetail
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return new HashSet<GrantedAuthority>((user.getRole().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList())));
+                .map(role -> new SimpleGrantedAuthority(role.getName().name())).collect(Collectors.toList())));
     }
 
     @Override

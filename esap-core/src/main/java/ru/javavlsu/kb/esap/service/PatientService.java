@@ -90,9 +90,8 @@ public class PatientService {
         patient.setMedicalCard(new MedicalCard(patient));
         log.debug("class:PatientService, method:create, sql:save");
         patient.setRole(new HashSet<>());
-        String role = "ROLE_PATIENT";
-        patient.getRole().add(roleRepository.findByName(role)
-                .orElseThrow(() -> new NotFoundException("Role not found: " + role)));
+        patient.getRole().add(roleRepository.findByName(RoleName.ROLE_PATIENT)
+                .orElseThrow(() -> new NotFoundException("Role not found: " + RoleName.ROLE_PATIENT)));
         String generatedPassword = lpg.generatePassword();
         String generatedLogin = lpg.generateLogin();
         patient.setPassword(passwordEncoder.encode(generatedPassword));
