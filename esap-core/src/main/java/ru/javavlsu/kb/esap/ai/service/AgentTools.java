@@ -5,6 +5,7 @@ import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
 import ru.javavlsu.kb.esap.dto.AppointmentDTO;
+import ru.javavlsu.kb.esap.dto.CurrentDateTime;
 import ru.javavlsu.kb.esap.dto.DoctorResponseDTO;
 import ru.javavlsu.kb.esap.dto.ScheduleResponseDTO.AppointmentResponseDTO;
 import ru.javavlsu.kb.esap.dto.ScheduleResponseDTO.PatientResponseDTO;
@@ -17,6 +18,7 @@ import ru.javavlsu.kb.esap.service.PatientService;
 import ru.javavlsu.kb.esap.service.ScheduleService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -110,5 +112,17 @@ public class AgentTools {
     public List<PatientResponseDTO> findPatientByFullName(@ToolParam(description = "Фамилия, имя или отчество пациента") String fullName) {
         log.info("Find patient by full name={}", fullName);
         return patientService.findByFullName(fullName);
+    }
+
+    @Tool(description = "Получить текущую дату и время. Используй для определения 'сегодня', 'завтра', 'сейчас'")
+    public CurrentDateTime getCurrentDateTime() {
+        final LocalDateTime now = LocalDateTime.now();
+        log.info("Запрос текущего времени: {}", now);
+        return new CurrentDateTime(
+                now.format(DateTimeFormatter.ISO_DATE),
+                now.format(DateTimeFormatter.ofPattern("HH:mm")),
+                now.getDayOfWeek().toString(),
+                now
+        );
     }
 }
