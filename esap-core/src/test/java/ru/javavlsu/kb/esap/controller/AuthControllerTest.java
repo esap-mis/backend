@@ -10,7 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
@@ -87,9 +86,7 @@ class AuthControllerTest {
 
     @Test
     public void performLogin_SuccessfulLogin_ReturnJwtTokenAndRole() throws Exception {
-        AuthenticationDTO authenticationDTO = new AuthenticationDTO();
-        authenticationDTO.setLogin("admin");
-        authenticationDTO.setPassword("123");
+        AuthenticationDTO authenticationDTO = new AuthenticationDTO("admin", "123");
 
         String requestBody = objectMapper.writeValueAsString(authenticationDTO);
         MockHttpServletRequestBuilder requestBuilder = post("/api/auth/login")
@@ -104,7 +101,7 @@ class AuthControllerTest {
         assertNotNull(jsonNode.get("jwt").asText());
         assertFalse(jsonNode.get("roles").asText().isBlank());
         assertFalse(jsonNode.get("roles").asText().isBlank());
-        assertEquals(jwtUtil.validateToken(jsonNode.get("jwt").asText()), authenticationDTO.getLogin());
+        assertEquals(jwtUtil.validateToken(jsonNode.get("jwt").asText()), authenticationDTO.login());
     }
 
     @Test

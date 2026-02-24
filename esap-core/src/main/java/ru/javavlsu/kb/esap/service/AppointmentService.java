@@ -119,4 +119,9 @@ public class AppointmentService {
         }
         return slots;
     }
+
+    @Transactional
+    public void delete(long id) {
+        appointmentRepository.deleteById(id);
+    }
 }

@@ -13,6 +13,7 @@ import java.util.List;
 public interface AppointmentMapper {
     Appointment toAppointment(AppointmentDTO appointmentDTO);
     AppointmentDTO toAppointmentDTO(Appointment appointment);
+    AppointmentResponseDTO toAppointmentResponseDTO(Appointment appointment);
     List<AppointmentResponseDTO> toAppointmentResponseDTOList(List<Appointment> appointments);
     List<PatientAppointmentDTO> toPatientAppointmentDTOList(List<Appointment> appointments);
     List<DoctorAppointmentDTO> toDoctorAppointmentDTOList(List<Appointment> appointments);

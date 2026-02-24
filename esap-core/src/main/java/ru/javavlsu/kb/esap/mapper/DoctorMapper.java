@@ -5,6 +5,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.data.domain.Page;
 import ru.javavlsu.kb.esap.dto.DoctorDTO;
+import ru.javavlsu.kb.esap.dto.DoctorResponseDTO;
 import ru.javavlsu.kb.esap.dto.auth.DoctorRegistration;
 import ru.javavlsu.kb.esap.exception.NotFoundException;
 import ru.javavlsu.kb.esap.model.Doctor;
@@ -21,6 +22,7 @@ public interface DoctorMapper {
     Doctor toDoctor(DoctorDTO doctorDTO);
     DoctorDTO toDoctorDTO(Doctor doctor);
     List<DoctorDTO> toDoctorDTOList(List<Doctor> doctors);
+    List<DoctorResponseDTO> toDoctorResponseDTOList(List<Doctor> doctors);
     default Page<DoctorDTO> toDoctorDTOPage(Page<Doctor> doctors) {
         return doctors.map(this::toDoctorDTO);
     }

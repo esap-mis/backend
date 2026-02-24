@@ -8,10 +8,6 @@ import reactor.core.publisher.Flux;
 import ru.javavlsu.kb.esap.model.Patient;
 import ru.javavlsu.kb.esap.service.PatientService;
 
-/**
- * AgentService 17.02.2026 Alexey Karabanov
- * Copyright (c) 2026 WINGS.
- */
 @Slf4j
 @Service
 public class AgentService {
@@ -25,39 +21,47 @@ public class AgentService {
 
     public String processMessage(String conversationId, String message, Long patientId) {
         log.info("Processing message: conversationId={}, patientId={}, message='{}'", conversationId, patientId, message);
-        final String response = chatClient.prompt()
+        final String pId = patientId != null ? patientId.toString() : "unknown";
+        String pFullNameRaw = "unknown";
+        if (patientId != null) {
+            try {
+                pFullNameRaw = patientService.getById(patientId).getFullName();
+            } catch (Exception e) {
+                log.warn("Could not get patient full name for ID {}: {}", patientId, e.getMessage());
+            }
+        }
+        final String pFullName = pFullNameRaw;
+        return chatClient.prompt()
+                .system(s -> s.param("patient_id", pId)
+                        .param("patient_full_name", pFullName))
                 .user(message)
                 .advisors(advisor -> {
                     advisor.param(ChatMemory.CONVERSATION_ID, conversationId);
-                    if (patientId != null) {
-                        final Patient patient = patientService.getById(patientId);
-                        advisor.param("patient_id", patientId);
-                        advisor.param("patient_name", patient.getAddress());
-                    }
                 })
                 .call()
                 .content();
-
-        log.info("Agent response: {}", response);
-        return response;
     }
 
     public Flux<String> processMessageStream(String conversationId, String message, Long patientId) {
         log.info("Processing message: conversationId={}, patientId={}, message='{}'", conversationId, patientId, message);
-        final Flux<String> response = chatClient.prompt()
+        final String pId = patientId != null ? patientId.toString() : "unknown";
+        String pFullNameRaw = "unknown";
+        if (patientId != null) {
+            try {
+                pFullNameRaw = patientService.getById(patientId).getFullName();
+            } catch (Exception e) {
+                log.warn("Could not get patient full name for ID {}: {}", patientId, e.getMessage());
+            }
+        }
+        final String pFullName = pFullNameRaw;
+        return chatClient.prompt()
+                .system(s -> s.param("patient_id", pId)
+                        .param("patient_full_name", pFullName))
                 .user(message)
                 .advisors(advisor -> {
                     advisor.param(ChatMemory.CONVERSATION_ID, conversationId);
-                    if (patientId != null) {
-                        final Patient patient = patientService.getById(patientId);
-                        advisor.param("patient_id", patientId);
-                        advisor.param("patient_name", patient.getAddress());
-                    }
                 })
                 .stream()
                 .content();
-
-        log.info("Agent response: {}", response);
-        return response;
     }
 }

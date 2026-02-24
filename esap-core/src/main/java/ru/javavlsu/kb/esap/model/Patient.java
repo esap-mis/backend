@@ -54,4 +54,7 @@ public class Patient extends User {
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<Appointment> appointments;
 
+    public String getFullName(){
+        return this.lastName + " " + this.firstName + " " + this.patronymic;
+    }
 }
