@@ -38,9 +38,9 @@ public class ScheduleService {
 
     @Transactional
     public Schedule create(ScheduleDTO scheduleDTO) throws NotCreateException {
-        Doctor doctor = doctorRepository.findById(scheduleDTO.getDoctorId())
+        Doctor doctor = doctorRepository.findById(scheduleDTO.doctorId())
                 .orElseThrow(() -> new NotFoundException("Doctor not found"));
-        scheduleExistsForDateAndDoctor(scheduleDTO.getDate(), doctor);
+        scheduleExistsForDateAndDoctor(scheduleDTO.date(), doctor);
         Schedule schedule = scheduleMapper.toSchedule(scheduleDTO);
         schedule.setDoctor(doctor);
         long minutesBetweenStartAndEnd = schedule.getStartDoctorAppointment().until(schedule.getEndDoctorAppointment(), ChronoUnit.MINUTES);

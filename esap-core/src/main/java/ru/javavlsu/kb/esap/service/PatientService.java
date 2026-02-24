@@ -112,14 +112,14 @@ public class PatientService {
         log.debug("class:PatientService, method:update, sql:findById");
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new NotFoundException("Patient with id=" + patientId + " not found"));
-        patient.setFirstName(patientDTO.getFirstName());
-        patient.setPatronymic(patientDTO.getPatronymic());
-        patient.setLastName(patientDTO.getLastName());
-        patient.setBirthDate(patientDTO.getBirthDate());
-        patient.setGender(patientDTO.getGender());
-        patient.setAddress(patientDTO.getAddress());
-        patient.setPhoneNumber(patientDTO.getPhoneNumber());
-        patient.setEmail(patientDTO.getEmail());
+        patient.setFirstName(patientDTO.firstName());
+        patient.setPatronymic(patientDTO.patronymic());
+        patient.setLastName(patientDTO.lastName());
+        patient.setBirthDate(patientDTO.birthDate());
+        patient.setGender(patientDTO.gender());
+        patient.setAddress(patientDTO.address());
+        patient.setPhoneNumber(patientDTO.phoneNumber());
+        patient.setEmail(patientDTO.email());
         log.debug("class:PatientService, method:update, sql:save");
         return patientRepository.save(patient);
     }
@@ -129,11 +129,10 @@ public class PatientService {
         int malePatients = patientRepository.getPatientsCountByGenderAndClinic(1, clinic);
         int femalePatients = patientRepository.getPatientsCountByGenderAndClinic(2, clinic);
 
-        PatientStatisticsByGenderDTO statistics = new PatientStatisticsByGenderDTO();
-        statistics.setMale(malePatients);
-        statistics.setFemale(femalePatients);
-
-        return statistics;
+        return new PatientStatisticsByGenderDTO(
+                malePatients,
+                femalePatients
+        );
     }
 
     @Transactional(readOnly = true)
@@ -143,12 +142,11 @@ public class PatientService {
         int adultCount = patientRepository.countPatientsByAgeRangeAndClinic(19, 59, clinic);
         int elderlyCount = patientRepository.countPatientsByAgeRangeAndClinic(60, 100, clinic);
 
-        PatientStatisticsByAgeDTO statistics = new PatientStatisticsByAgeDTO();
-        statistics.setChild(childCount);
-        statistics.setAdult(adultCount);
-        statistics.setElderly(elderlyCount);
-
-        return statistics;
+        return new PatientStatisticsByAgeDTO(
+                childCount,
+                adultCount,
+                elderlyCount
+        );
     }
 
     public Patient getByLogin(String login) {

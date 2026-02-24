@@ -6,13 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class ClinicRegistrationDTO {
-    @Valid
-    private ClinicRegistration clinic;
-    @Valid
-    private DoctorRegistration doctor;
-}
+public record ClinicRegistrationDTO (
+        @Valid
+        ClinicRegistration clinic,
+        @Valid
+        DoctorRegistration doctor
+) {}

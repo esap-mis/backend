@@ -10,27 +10,18 @@ import ru.javavlsu.kb.esap.model.Clinic;
 
 import java.util.List;
 
-@Getter
-@Setter
 //TODO потестить @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class DoctorDTO {
+public record DoctorDTO (
     //TODO потестить @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) - возможно уменьшиться количество dto
-    private Long id;
+    Long id,
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String login;
-
-    private String firstName;
-
+    String login,
+    String firstName,
     @Size(max = 100)
-    private String patronymic;
-
-    private String lastName;
-
-    private String specialization;
-
-    private int gender;
-
-    private ClinicDTO clinic;
-
-    private List<ScheduleResponseDTO> schedules;
-}
+    String patronymic,
+    String lastName,
+    String specialization,
+    int gender,
+    ClinicDTO clinic,
+    List<ScheduleResponseDTO> schedules
+) {}

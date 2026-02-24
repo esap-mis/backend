@@ -63,23 +63,23 @@ public class AuthController {
         if (bindingResult.hasErrors()) {
             throw new NotCreateException(ResponseMessageError.createErrorMsg(bindingResult.getFieldErrors()));
         }
-        String[] loginPassword = registrationService.registrationClinic(clinicMapper.toClinic(clinicRegistrationDTO.getClinic()),
-                doctorMapper.toDoctor(clinicRegistrationDTO.getDoctor()));
+        String[] loginPassword = registrationService.registrationClinic(clinicMapper.toClinic(clinicRegistrationDTO.clinic()),
+                doctorMapper.toDoctor(clinicRegistrationDTO.doctor()));
         return Map.of("login", loginPassword[0], "password", loginPassword[1]);
     }
 
     @PostMapping("/login")
     public Map<String, String> performLogin(@RequestBody AuthenticationDTO authenticationDTO, HttpServletRequest request) {
-        List<String> roles = userService.getRoles(authenticationDTO.getLogin());
+        List<String> roles = userService.getRoles(authenticationDTO.login());
         if (roles.stream().anyMatch(role -> role.equals("ROLE_PATIENT")) &&
                 !request.getHeader("User-Agent").contains("mobile")) {
             throw new DeviseLoginException("Cannot login from this device");
         }
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(authenticationDTO.getLogin(), authenticationDTO.getPassword());
+                new UsernamePasswordAuthenticationToken(authenticationDTO.login(), authenticationDTO.password());
         authenticationManager.authenticate(authenticationToken);
-        String token = jwtUtil.generateToken(authenticationDTO.getLogin());
-        return Map.of("jwt", token, "roles", String.join(";", userService.getRoles(authenticationDTO.getLogin())));
+        String token = jwtUtil.generateToken(authenticationDTO.login());
+        return Map.of("jwt", token, "roles", String.join(";", userService.getRoles(authenticationDTO.login())));
     }
 
     @PostMapping("/password/reset")

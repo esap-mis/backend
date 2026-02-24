@@ -46,7 +46,7 @@ public class AppointmentService {
     @Transactional
     public void create(AppointmentDTO appointmentDTO, long scheduleId) throws NotCreateException {
         Appointment appointment = appointmentMapper.toAppointment(appointmentDTO);
-        appointment.setEndAppointments(appointmentDTO.getStartAppointments().plusMinutes(30));
+        appointment.setEndAppointments(appointmentDTO.startAppointments().plusMinutes(30));
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NotFoundException("Schedule not found"));
         List<Appointment> appointments = appointmentRepository.findBySchedule(schedule);
@@ -58,7 +58,7 @@ public class AppointmentService {
             throw new NotCreateException("Time is already taken");
         }
         appointment.setSchedule(schedule);
-        Patient patient = patientRepository.findById(appointmentDTO.getPatientId())
+        Patient patient = patientRepository.findById(appointmentDTO.patientId())
                 .orElseThrow(() -> new NotFoundException("Patient not found"));
         appointment.setPatient(patient);
         appointment.setDoctor(doctorService.refreshDoctor(schedule.getDoctor()));

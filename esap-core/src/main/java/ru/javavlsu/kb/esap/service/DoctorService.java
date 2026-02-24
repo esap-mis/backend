@@ -93,11 +93,11 @@ public class DoctorService {
         log.debug("class:DoctorService, method:update, sql:findById");
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new NotFoundException("Doctor with id=" + doctorId + " not found"));
-        doctor.setFirstName(doctorDTO.getFirstName());
-        doctor.setPatronymic(doctorDTO.getPatronymic());
-        doctor.setLastName(doctorDTO.getLastName());
-        doctor.setGender(doctorDTO.getGender());
-        doctor.setSpecialization(doctorDTO.getSpecialization());
+        doctor.setFirstName(doctorDTO.firstName());
+        doctor.setPatronymic(doctorDTO.patronymic());
+        doctor.setLastName(doctorDTO.lastName());
+        doctor.setGender(doctorDTO.gender());
+        doctor.setSpecialization(doctorDTO.specialization());
         log.debug("class:DoctorService, method:update, sql:save");
         return doctorRepository.save(doctor);
     }

@@ -74,10 +74,10 @@ public class RegistrationService {
 
     @Transactional
     public void passwordReset(AuthenticationDTO authenticationDTO) {
-        User user = userRepository.findByLogin(authenticationDTO.getLogin())
+        User user = userRepository.findByLogin(authenticationDTO.login())
                 .orElseThrow(() -> new NotFoundException("Doctor not found"));
 
-        user.setPassword(passwordEncoder.encode(authenticationDTO.getPassword()));
+        user.setPassword(passwordEncoder.encode(authenticationDTO.password()));
         userRepository.save(user);
     }
 

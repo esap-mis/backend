@@ -17,7 +17,7 @@ public class UserDeviceTokenService {
     }
 
     public void saveToken(User user, TokenRequest request) {
-        String tokenValue = request.getToken();
+        String tokenValue = request.token();
 
         if (!userDeviceTokenRepository.existsByTokenAndUser(tokenValue, user)) {
             UserDeviceToken deviceToken = new UserDeviceToken();
