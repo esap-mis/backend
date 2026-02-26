@@ -68,7 +68,7 @@ public class AgentTools {
         }
     }
 
-    @Tool(description = "Получить список моих предстоящих записей на прием")
+    @Tool(description = "Получить список моих предстоящих записей на прием (включая отмененные)")
     public String getMyUpcomingAppointments() {
         log.info("Get upcoming appointments for current user");
         try {
@@ -80,7 +80,7 @@ public class AgentTools {
             if (appointments.isEmpty()) {
                 return "У вас нет записей на прием.";
             }
-            return "Ваши записи: " + appointments;
+            return "Ваши записи (CONFIRMED - активна, CANCELLED - отменена): " + appointments;
         } catch (Exception e) {
             log.error("Error getting current patient upcoming appointments", e);
             return "Произошла ошибка при получении ваших записей: " + e.getMessage();
@@ -188,12 +188,12 @@ public class AgentTools {
         }
     }
 
-    @Tool(description = "Отменить существующую запись на прием")
+    @Tool(description = "Отменить существующую запись на прием. Используется как для своих записей, так и при отмене по просьбе.")
     public String cancelAppointment(@ToolParam(description = "ID записи") Long appointmentId) {
         log.info("Cancel appointment: ID={}", appointmentId);
         try {
-            appointmentService.delete(appointmentId);
-            return "Запись успешно отменена.";
+            appointmentService.cancelAppointment(appointmentId);
+            return "Запись #" + appointmentId + " успешно отменена (статус изменен на CANCELLED).";
         } catch (Exception e) {
             log.error("Error cancelling appointment", e);
             return "Произошла ошибка при отмене записи: " + e.getMessage();

@@ -1,5 +1,7 @@
 package ru.javavlsu.kb.esap.dto;
 
+import ru.javavlsu.kb.esap.model.AppointmentStatus;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -8,5 +10,6 @@ public record PatientAppointmentDTO (
         LocalDate date,
         LocalTime startAppointments,
         LocalTime endAppointments,
-        DoctorResponseDTO doctor
+        DoctorResponseDTO doctor,
+        AppointmentStatus status
 ) {}

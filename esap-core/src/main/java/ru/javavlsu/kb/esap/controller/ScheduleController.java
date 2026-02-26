@@ -101,4 +101,10 @@ public class ScheduleController {
             return ResponseEntity.ok(appointmentService.getAppointmentsForUser(doctor));
         }
     }
+
+    @DeleteMapping("/appointment/{id}")
+    public ResponseEntity<Void> cancelAppointment(@PathVariable("id") Long id) {
+        appointmentService.cancelAppointment(id);
+        return ResponseEntity.ok().build();
+    }
 }

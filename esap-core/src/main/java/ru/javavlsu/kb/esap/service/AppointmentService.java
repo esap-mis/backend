@@ -121,7 +121,10 @@ public class AppointmentService {
     }
 
     @Transactional
-    public void delete(long id) {
-        appointmentRepository.deleteById(id);
+    public void cancelAppointment(long id) {
+        final Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Appointment with id=" + id + " not found"));
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointmentRepository.save(appointment);
     }
 }
