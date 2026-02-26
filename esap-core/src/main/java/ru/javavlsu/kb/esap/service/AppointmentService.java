@@ -95,8 +95,33 @@ public class AppointmentService {
 
     @Transactional(readOnly = true)
     public Optional<Appointment> getUpcomingAppointmentByPatient(Patient patient) {
-        return appointmentRepository.findUpcomingAppointmentByPatient(
-                patient, LocalDate.now(), LocalTime.now());
+        return appointmentRepository.findUpcomingByPatient(patient, LocalDate.now(), LocalTime.now())
+                .stream()
+                .findFirst();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PatientAppointmentDTO> getUpcomingAppointmentsForUser(Patient patient) {
+        List<Appointment> appointments = appointmentRepository.findUpcomingByPatient(patient, LocalDate.now(), LocalTime.now());
+        return appointmentMapper.toPatientAppointmentDTOList(appointments);
+    }
+
+    @Transactional(readOnly = true)
+    public List<DoctorAppointmentDTO> getUpcomingAppointmentsForUser(Doctor doctor) {
+        List<Appointment> appointments = appointmentRepository.findUpcomingByDoctor(doctor, LocalDate.now(), LocalTime.now());
+        return appointmentMapper.toDoctorAppointmentDTOList(appointments);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PatientAppointmentDTO> getPastAppointmentsForUser(Patient patient) {
+        List<Appointment> appointments = appointmentRepository.findPastByPatient(patient, LocalDate.now(), LocalTime.now());
+        return appointmentMapper.toPatientAppointmentDTOList(appointments);
+    }
+
+    @Transactional(readOnly = true)
+    public List<DoctorAppointmentDTO> getPastAppointmentsForUser(Doctor doctor) {
+        List<Appointment> appointments = appointmentRepository.findPastByDoctor(doctor, LocalDate.now(), LocalTime.now());
+        return appointmentMapper.toDoctorAppointmentDTOList(appointments);
     }
 
     @Transactional(readOnly = true)

@@ -8,6 +8,7 @@ import ru.javavlsu.kb.esap.dto.AppointmentDTO;
 import ru.javavlsu.kb.esap.dto.CurrentDateTime;
 import ru.javavlsu.kb.esap.dto.DoctorResponseDTO;
 import ru.javavlsu.kb.esap.dto.MedicalCardDTO.MedicalCardResponseDTO;
+import ru.javavlsu.kb.esap.dto.PatientAppointmentDTO;
 import ru.javavlsu.kb.esap.dto.ScheduleResponseDTO.AppointmentResponseDTO;
 import ru.javavlsu.kb.esap.dto.ScheduleResponseDTO.PatientResponseDTO;
 import ru.javavlsu.kb.esap.mapper.MedicalCardMapper;
@@ -76,7 +77,7 @@ public class AgentTools {
             if (!(user instanceof Patient patient)) {
                 return "Вы не авторизованы как пациент.";
             }
-            final List<ru.javavlsu.kb.esap.dto.PatientAppointmentDTO> appointments = appointmentService.getAppointmentsForUser(patient);
+            final List<PatientAppointmentDTO> appointments = appointmentService.getAppointmentsForUser(patient);
             if (appointments.isEmpty()) {
                 return "У вас нет записей на прием.";
             }
@@ -93,7 +94,7 @@ public class AgentTools {
                                            @ToolParam(description = "Время начала в формате ЧЧ:ММ (например, 09:00 или 14:30)") String time) {
         log.info("Book appointment for current user: scheduleId={}, date={}, time={}", scheduleId, date, time);
         try {
-            ru.javavlsu.kb.esap.model.User user = userUtils.UserDetails().getUser();
+            final User user = userUtils.UserDetails().getUser();
             if (!(user instanceof Patient patient)) {
                 return "Вы не авторизованы как пациент.";
             }

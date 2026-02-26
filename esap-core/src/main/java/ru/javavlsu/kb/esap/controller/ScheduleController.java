@@ -90,15 +90,27 @@ public class ScheduleController {
         return appointmentService.getAppointmentsCountByDay(doctor);
     }
 
-    @GetMapping("/appointments")
-    public ResponseEntity<List<?>> getUserAppointments() {
+    @GetMapping("/appointments/upcoming")
+    public ResponseEntity<List<?>> getUpcomingUserAppointments() {
         UserDetails ud = userUtils.UserDetails();
         if (ud.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_PATIENT"))) {
             Patient patient = (Patient) ud.getUser();
-            return ResponseEntity.ok(appointmentService.getAppointmentsForUser(patient));
+            return ResponseEntity.ok(appointmentService.getUpcomingAppointmentsForUser(patient));
         } else {
             Doctor doctor = (Doctor) ud.getUser();
-            return ResponseEntity.ok(appointmentService.getAppointmentsForUser(doctor));
+            return ResponseEntity.ok(appointmentService.getUpcomingAppointmentsForUser(doctor));
+        }
+    }
+
+    @GetMapping("/appointments/past")
+    public ResponseEntity<List<?>> getPastUserAppointments() {
+        UserDetails ud = userUtils.UserDetails();
+        if (ud.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_PATIENT"))) {
+            Patient patient = (Patient) ud.getUser();
+            return ResponseEntity.ok(appointmentService.getPastAppointmentsForUser(patient));
+        } else {
+            Doctor doctor = (Doctor) ud.getUser();
+            return ResponseEntity.ok(appointmentService.getPastAppointmentsForUser(doctor));
         }
     }
 
