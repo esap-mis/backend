@@ -9,8 +9,10 @@ import ru.javavlsu.kb.esap.mapper.ScheduleMapper;
 import ru.javavlsu.kb.esap.model.Clinic;
 import ru.javavlsu.kb.esap.model.Doctor;
 import ru.javavlsu.kb.esap.model.Schedule;
+import ru.javavlsu.kb.esap.model.TimeSlot;
 import ru.javavlsu.kb.esap.repository.DoctorRepository;
 import ru.javavlsu.kb.esap.repository.ScheduleRepository;
+import ru.javavlsu.kb.esap.repository.TimeSlotRepository;
 import ru.javavlsu.kb.esap.exception.NotCreateException;
 import ru.javavlsu.kb.esap.exception.NotFoundException;
 
@@ -29,11 +31,13 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final ScheduleMapper scheduleMapper;
     private final DoctorRepository doctorRepository;
+    private final TimeSlotRepository timeSlotRepository;
 
-    public ScheduleService(ScheduleRepository scheduleRepository, ScheduleMapper scheduleMapper, DoctorRepository doctorRepository) {
+    public ScheduleService(ScheduleRepository scheduleRepository, ScheduleMapper scheduleMapper, DoctorRepository doctorRepository, TimeSlotRepository timeSlotRepository) {
         this.scheduleRepository = scheduleRepository;
         this.scheduleMapper = scheduleMapper;
         this.doctorRepository = doctorRepository;
+        this.timeSlotRepository = timeSlotRepository;
     }
 
     @Transactional
@@ -43,12 +47,22 @@ public class ScheduleService {
         scheduleExistsForDateAndDoctor(scheduleDTO.date(), doctor);
         Schedule schedule = scheduleMapper.toSchedule(scheduleDTO);
         schedule.setDoctor(doctor);
-        long minutesBetweenStartAndEnd = schedule.getStartDoctorAppointment().until(schedule.getEndDoctorAppointment(), ChronoUnit.MINUTES);
-        if (minutesBetweenStartAndEnd <= 0 && minutesBetweenStartAndEnd % 30 != 0) {
+        long minutesBetweenStartAndEnd = scheduleDTO.startDoctorAppointment().until(scheduleDTO.endDoctorAppointment(), ChronoUnit.MINUTES);
+        if (minutesBetweenStartAndEnd <= 0 || minutesBetweenStartAndEnd % 30 != 0) {
             throw new NotCreateException("Invalid schedule time");
         }
-        schedule.setMaxPatientPerDay(((int) minutesBetweenStartAndEnd / 30) + 1);
+        schedule.setTimeSlots(generateTimeSlotsForSchedule(schedule, scheduleDTO.startDoctorAppointment(), scheduleDTO.endDoctorAppointment()));
         return scheduleRepository.save(schedule);
+    }
+
+    private List<TimeSlot> generateTimeSlotsForSchedule(Schedule schedule, LocalTime startTime, LocalTime endTime) {
+        List<TimeSlot> slots = new java.util.ArrayList<>();
+        LocalTime current = startTime;
+        while (current.isBefore(endTime)) {
+            slots.add(new TimeSlot(current, current.plusMinutes(30), schedule));
+            current = current.plusMinutes(30);
+        }
+        return slots;
     }
 
     @Transactional(readOnly = true)
@@ -57,8 +71,14 @@ public class ScheduleService {
     }
 
     @Transactional(readOnly = true)
+    public Schedule getById(long id) {
+        return scheduleRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Schedule not found"));
+    }
+
+    @Transactional(readOnly = true)
     public Schedule getByIdAndDoctor(long id, Doctor doctor) {
-        Optional<Schedule> schedule = scheduleRepository.findByIdAndDoctorOrderByAppointmentStartAppointmentsAsc(id, doctor);
+        Optional<Schedule> schedule = scheduleRepository.findByIdAndDoctorOrderByAppointmentTimeSlotStartTimeAsc(id, doctor);
         return schedule.orElseThrow(() -> new NotFoundException("Schedule not found"));
     }
 
@@ -98,9 +118,14 @@ public class ScheduleService {
         Schedule newSchedule = new Schedule();
         newSchedule.setDate(lastWeekSchedule.getDate().plusWeeks(1));
         newSchedule.setDoctor(lastWeekSchedule.getDoctor());
-        newSchedule.setMaxPatientPerDay(lastWeekSchedule.getMaxPatientPerDay());
-        newSchedule.setStartDoctorAppointment(lastWeekSchedule.getStartDoctorAppointment());
-        newSchedule.setEndDoctorAppointment(lastWeekSchedule.getEndDoctorAppointment());
+        
+        // Get start and end times from existing time slots
+        List<TimeSlot> oldSlots = lastWeekSchedule.getTimeSlots();
+        if (oldSlots != null && !oldSlots.isEmpty()) {
+            LocalTime startTime = oldSlots.get(0).getStartTime();
+            LocalTime endTime = oldSlots.get(oldSlots.size() - 1).getEndTime();
+            newSchedule.setTimeSlots(generateTimeSlotsForSchedule(newSchedule, startTime, endTime));
+        }
         return newSchedule;
     }
 
@@ -113,10 +138,7 @@ public class ScheduleService {
 
                 LocalTime startAppointment = LocalTime.of(8, 0);
                 LocalTime endAppointment = LocalTime.of(17, 0);
-                defaultSchedule.setStartDoctorAppointment(startAppointment);
-                defaultSchedule.setEndDoctorAppointment(endAppointment);
-                long minutesBetweenStartAndEnd = startAppointment.until(endAppointment, ChronoUnit.MINUTES);
-                defaultSchedule.setMaxPatientPerDay(((int) minutesBetweenStartAndEnd / 30) + 1);
+                defaultSchedule.setTimeSlots(generateTimeSlotsForSchedule(defaultSchedule, startAppointment, endAppointment));
 
                 scheduleRepository.save(defaultSchedule);
             }
@@ -126,7 +148,7 @@ public class ScheduleService {
     private boolean scheduleExistsForDateAndDoctor(LocalDate date, Doctor doctor) {
         boolean scheduleExists = scheduleRepository.existsByDateAndDoctor(date, doctor);
         if (!scheduleExists) {
-            return scheduleExists;
+            return false;
         }
         throw new NotCreateException("Schedule already exists for the specified date and doctor");
     }

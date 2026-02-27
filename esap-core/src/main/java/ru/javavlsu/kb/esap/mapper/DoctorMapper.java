@@ -21,6 +21,7 @@ import java.util.Set;
 public interface DoctorMapper {
     Doctor toDoctor(DoctorDTO doctorDTO);
     DoctorDTO toDoctorDTO(Doctor doctor);
+    @Mapping(target = "date", source = "schedule.date")
     List<DoctorDTO> toDoctorDTOList(List<Doctor> doctors);
     List<DoctorResponseDTO> toDoctorResponseDTOList(List<Doctor> doctors);
     default Page<DoctorDTO> toDoctorDTOPage(Page<Doctor> doctors) {

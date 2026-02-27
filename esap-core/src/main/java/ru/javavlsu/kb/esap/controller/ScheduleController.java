@@ -50,7 +50,11 @@ public class ScheduleController {
 
     @GetMapping("/{id}")
     public ScheduleResponseDTO getSchedule(@PathVariable("id") Long id) {
-        return scheduleMapper.toScheduleResponseDTO(scheduleService.getByIdAndDoctor(id, (Doctor) userUtils.UserDetails().getUser()));
+        UserDetails ud = userUtils.UserDetails();
+        if (ud.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_PATIENT"))) {
+            return scheduleMapper.toScheduleResponseDTO(scheduleService.getById(id));
+        }
+        return scheduleMapper.toScheduleResponseDTO(scheduleService.getByIdAndDoctor(id, (Doctor) ud.getUser()));
     }
 
     @PostMapping

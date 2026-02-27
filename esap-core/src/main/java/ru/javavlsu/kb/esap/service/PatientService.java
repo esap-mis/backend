@@ -163,8 +163,8 @@ public class PatientService {
         for (Patient patient : patients) {
             Optional<Appointment> upcomingAppointment = appointmentService.getUpcomingAppointmentByPatient(patient);
             if (upcomingAppointment.isPresent()) {
-                LocalDateTime formattedDateTime = upcomingAppointment.get().getDate()
-                        .atTime(upcomingAppointment.get().getStartAppointments());
+                LocalDateTime formattedDateTime = upcomingAppointment.get().getSchedule().getDate()
+                        .atTime(upcomingAppointment.get().getTimeSlot().getStartTime());
 
                 String messageBody = message.getBody() + String.format(" \"%s\". Дата и время визита: %s. По адресу: %s.",
                         patient.getClinic().getName(), formattedDateTime.format(formatter), patient.getClinic().getAddress());

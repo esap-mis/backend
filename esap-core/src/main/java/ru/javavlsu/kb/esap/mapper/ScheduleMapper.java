@@ -7,7 +7,7 @@ import ru.javavlsu.kb.esap.model.Schedule;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {TimeSlotMapper.class, AppointmentMapper.class})
 public interface ScheduleMapper {
     ScheduleResponseDTO toScheduleResponseDTO(Schedule schedule);
     Schedule toSchedule(ScheduleDTO scheduleDTO);

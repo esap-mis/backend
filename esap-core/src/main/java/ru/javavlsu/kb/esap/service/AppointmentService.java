@@ -3,6 +3,7 @@ package ru.javavlsu.kb.esap.service;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.javavlsu.kb.esap.dto.AppointmentsCountByDayDTO;
@@ -15,6 +16,7 @@ import ru.javavlsu.kb.esap.model.*;
 import ru.javavlsu.kb.esap.repository.AppointmentRepository;
 import ru.javavlsu.kb.esap.repository.PatientRepository;
 import ru.javavlsu.kb.esap.repository.ScheduleRepository;
+import ru.javavlsu.kb.esap.repository.TimeSlotRepository;
 import ru.javavlsu.kb.esap.exception.NotCreateException;
 import ru.javavlsu.kb.esap.exception.NotFoundException;
 
@@ -35,8 +37,9 @@ public class AppointmentService {
     private final DoctorService doctorService;
     private final EntityManager em;
     private final ScheduleService scheduleService;
+    private final TimeSlotRepository timeSlotRepository;
 
-    public AppointmentService(AppointmentRepository appointmentRepository, ScheduleRepository scheduleRepository, PatientRepository patientRepository, AppointmentMapper appointmentMapper, DoctorService doctorService, EntityManager em, ScheduleService scheduleService) {
+    public AppointmentService(AppointmentRepository appointmentRepository, ScheduleRepository scheduleRepository, PatientRepository patientRepository, AppointmentMapper appointmentMapper, DoctorService doctorService, EntityManager em, ScheduleService scheduleService, TimeSlotRepository timeSlotRepository) {
         this.appointmentRepository = appointmentRepository;
         this.scheduleRepository = scheduleRepository;
         this.patientRepository = patientRepository;
@@ -44,23 +47,24 @@ public class AppointmentService {
         this.doctorService = doctorService;
         this.em = em;
         this.scheduleService = scheduleService;
+        this.timeSlotRepository = timeSlotRepository;
     }
 
     @Transactional
     public AppointmentResponseDTO create(AppointmentDTO appointmentDTO, long scheduleId) throws NotCreateException {
-        Appointment appointment = appointmentMapper.toAppointment(appointmentDTO);
-        appointment.setEndAppointments(appointmentDTO.startAppointments().plusMinutes(30));
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new NotFoundException("Schedule not found"));
-        List<Appointment> appointments = appointmentRepository.findBySchedule(schedule);
-        if (schedule.getMaxPatientPerDay() == appointments.size()) {
-            throw new NotCreateException("No free time found in the schedule");
-        }
-        appointments = appointmentRepository.findByStartAppointmentsAndDateAndSchedule(appointment.getStartAppointments(), appointment.getDate(), schedule);
-        if (!appointments.isEmpty()) {
-            throw new NotCreateException("Time is already taken");
-        }
+
+        TimeSlot timeSlot = schedule.getTimeSlots().stream()
+                .filter(slot -> slot.getStartTime().equals(appointmentDTO.startAppointments()) && slot.getIsAvailable())
+                .findFirst()
+                .orElseThrow(() -> new NotCreateException("Time is already taken or not found"));
+
+        Appointment appointment = appointmentMapper.toAppointment(appointmentDTO);
         appointment.setSchedule(schedule);
+        appointment.setTimeSlot(timeSlot);
+        timeSlot.setIsAvailable(false);
+
         Patient patient = patientRepository.findById(appointmentDTO.patientId())
                 .orElseThrow(() -> new NotFoundException("Patient not found"));
         appointment.setPatient(patient);
@@ -127,22 +131,10 @@ public class AppointmentService {
     @Transactional(readOnly = true)
     public List<LocalTime> findAvailableAppointments(Long doctorId, LocalDate date) {
         final Schedule schedule = scheduleService.getDoctorScheduleByDate(doctorId, date);
-        final List<LocalTime> bookedTimes = appointmentRepository.findStartTimesByScheduleId(schedule.getId());
-        final List<LocalTime> allSlots = generateTimeSlots(schedule.getStartDoctorAppointment(), schedule.getEndDoctorAppointment());
-        return allSlots.stream()
-                .filter(slot -> !bookedTimes.contains(slot))
-                .limit(schedule.getMaxPatientPerDay() - bookedTimes.size())
+        return schedule.getTimeSlots().stream()
+                .filter(TimeSlot::getIsAvailable)
+                .map(TimeSlot::getStartTime)
                 .toList();
-    }
-
-    private List<LocalTime> generateTimeSlots(LocalTime start, LocalTime end) {
-        final List<LocalTime> slots = new ArrayList<>();
-        LocalTime current = start;
-        while (current.isBefore(end)) {
-            slots.add(current);
-            current = current.plusMinutes(30);
-        }
-        return slots;
     }
 
     @Transactional
@@ -150,6 +142,17 @@ public class AppointmentService {
         final Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Appointment with id=" + id + " not found"));
         appointment.setStatus(AppointmentStatus.CANCELLED);
+        if (appointment.getTimeSlot() != null) {
+            appointment.getTimeSlot().setIsAvailable(true);
+        }
         appointmentRepository.save(appointment);
+    }
+
+    @Transactional
+    @Scheduled(fixedRate = 3600000)
+    public void updatePastAppointmentsStatus() {
+        List<Appointment> pastConfirmed = appointmentRepository.findPastConfirmedAppointments(LocalDate.now(), LocalTime.now());
+        pastConfirmed.forEach(a -> a.setStatus(AppointmentStatus.COMPLETED));
+        appointmentRepository.saveAll(pastConfirmed);
     }
 }

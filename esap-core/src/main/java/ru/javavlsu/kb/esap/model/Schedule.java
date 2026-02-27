@@ -31,16 +31,11 @@ public class Schedule {
     @JsonSerialize(using = LocalDateSerializer.class)
     private LocalDate date;
 
-    @JsonSerialize(using = LocalTimeSerializer.class)
-    private LocalTime startDoctorAppointment;
-
-    @JsonSerialize(using = LocalTimeSerializer.class)
-    private LocalTime endDoctorAppointment;
-
-    private int maxPatientPerDay;
-
     @OneToMany(mappedBy = "schedule", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Appointment> appointments;
+
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TimeSlot> timeSlots;
 
     @Override
     public boolean equals(Object o) {

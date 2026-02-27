@@ -20,8 +20,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     @Query("SELECT s FROM Schedule s WHERE s.doctor.clinic = :clinic AND s.date = :date")
     List<Schedule> findAllByClinic(@Param("date") LocalDate date, @Param("clinic") Clinic clinic);
 
-    @Query("SELECT s FROM Schedule s JOIN FETCH s.appointments a WHERE s.doctor = :doctor AND s.id = :id ORDER BY a.startAppointments ASC")
-    Optional<Schedule> findByIdAndDoctorOrderByAppointmentStartAppointmentsAsc(@Param("id") Long id, @Param("doctor") Doctor doctor);
+    @Query("SELECT s FROM Schedule s JOIN FETCH s.appointments a WHERE s.doctor = :doctor AND s.id = :id ORDER BY a.timeSlot.startTime ASC")
+    Optional<Schedule> findByIdAndDoctorOrderByAppointmentTimeSlotStartTimeAsc(@Param("id") Long id, @Param("doctor") Doctor doctor);
 
     void deleteSchedulesByDateBefore(LocalDate date);
 

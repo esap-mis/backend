@@ -81,7 +81,7 @@ public class AgentTools {
             if (appointments.isEmpty()) {
                 return "У вас нет записей на прием.";
             }
-            return "Ваши записи (CONFIRMED - активна, CANCELLED - отменена): " + appointments;
+            return "Ваши записи (CONFIRMED - активна, CANCELLED - отменена, COMPLETED - завершена): " + appointments;
         } catch (Exception e) {
             log.error("Error getting current patient upcoming appointments", e);
             return "Произошла ошибка при получении ваших записей: " + e.getMessage();

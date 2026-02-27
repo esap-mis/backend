@@ -1,16 +1,13 @@
 package ru.javavlsu.kb.esap.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import ru.javavlsu.kb.esap.validator.LocalTimeConstraint;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Objects;
 
@@ -18,37 +15,41 @@ import java.util.Objects;
 @Getter
 @Setter
 @ToString
-@Table(name = "appointments")
-public class Appointment {
+@NoArgsConstructor
+@Table(name = "time_slots")
+public class TimeSlot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Patient patient;
+    @Column(name = "start_time")
+    @JsonSerialize(using = LocalTimeSerializer.class)
+    private LocalTime startTime;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Doctor doctor;
+    @Column(name = "end_time")
+    @JsonSerialize(using = LocalTimeSerializer.class)
+    private LocalTime endTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "schedule_id")
-    @JsonIgnore
+    @ToString.Exclude
     private Schedule schedule;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "time_slot_id")
-    private TimeSlot timeSlot;
+    @Column(name = "is_available")
+    private Boolean isAvailable = true;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private AppointmentStatus status = AppointmentStatus.CONFIRMED;
+    public TimeSlot(LocalTime startTime, LocalTime endTime, Schedule schedule) {
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.schedule = schedule;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Appointment that = (Appointment) o;
-        return Objects.equals(id, that.id);
+        TimeSlot timeSlot = (TimeSlot) o;
+        return Objects.equals(id, timeSlot.id);
     }
 
     @Override

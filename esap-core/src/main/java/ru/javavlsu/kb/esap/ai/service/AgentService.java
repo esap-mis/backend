@@ -21,19 +21,15 @@ public class AgentService {
 
     public String processMessage(String conversationId, String message, Long patientId) {
         log.info("Processing message: conversationId={}, patientId={}, message='{}'", conversationId, patientId, message);
-        final String pId = patientId != null ? patientId.toString() : "unknown";
-        String pFullNameRaw = "unknown";
-        if (patientId != null) {
-            try {
-                pFullNameRaw = patientService.getById(patientId).getFullName();
-            } catch (Exception e) {
-                log.warn("Could not get patient full name for ID {}: {}", patientId, e.getMessage());
-            }
-        }
-        final String pFullName = pFullNameRaw;
         return chatClient.prompt()
-                .system(s -> s.param("patient_id", pId)
-                        .param("patient_full_name", pFullName))
+                .system(s -> {
+                        if (patientId != null) {
+                            final Patient patient = patientService.getById(patientId);
+                            s.param("patient_id", patientId);
+                            s.param("patient_full_name", patient.getFullName());
+                        }
+                    }
+                )
                 .user(message)
                 .advisors(advisor -> {
                     advisor.param(ChatMemory.CONVERSATION_ID, conversationId);
@@ -44,19 +40,15 @@ public class AgentService {
 
     public Flux<String> processMessageStream(String conversationId, String message, Long patientId) {
         log.info("Processing message: conversationId={}, patientId={}, message='{}'", conversationId, patientId, message);
-        final String pId = patientId != null ? patientId.toString() : "unknown";
-        String pFullNameRaw = "unknown";
-        if (patientId != null) {
-            try {
-                pFullNameRaw = patientService.getById(patientId).getFullName();
-            } catch (Exception e) {
-                log.warn("Could not get patient full name for ID {}: {}", patientId, e.getMessage());
-            }
-        }
-        final String pFullName = pFullNameRaw;
         return chatClient.prompt()
-                .system(s -> s.param("patient_id", pId)
-                        .param("patient_full_name", pFullName))
+                .system(s -> {
+                            if (patientId != null) {
+                                final Patient patient = patientService.getById(patientId);
+                                s.param("patient_id", patientId);
+                                s.param("patient_full_name", patient.getFullName());
+                            }
+                        }
+                )
                 .user(message)
                 .advisors(advisor -> {
                     advisor.param(ChatMemory.CONVERSATION_ID, conversationId);
