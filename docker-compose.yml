@@ -34,7 +34,10 @@ services:
 
   core:
     container_name: core
-    image: esapmis/core:1.0.1
+#    image: esapmis/core:1.0.1
+    build:
+      context: ../backend/esap-core
+      dockerfile: /Dockerfile
     restart: "no"
     ports: ["8080:8080"]
     environment:
@@ -127,7 +130,9 @@ services:
 
   notification-service:
     container_name: notification-service
-    image: esapmis/notification-service:1.0.0
+    build:
+      context: ../backend/notification-service
+      dockerfile: /Dockerfile
     restart: "no"
     ports: [ "8083:8083" ]
     environment:
