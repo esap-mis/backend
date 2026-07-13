@@ -27,6 +27,9 @@ public interface DoctorMapper {
         return doctors.map(this::toDoctorDTO);
     }
 
+    @Mapping(target = "role", ignore = true)
+    Doctor toDoctor(DoctorRegistration doctorDTO);
+
     @Mapping(target = "role", source = "role")
     Doctor toDoctor(DoctorRegistration doctorDTO, @Context RoleRepository roleRepository);
 

@@ -45,9 +45,8 @@ public class AuthController {
     private final UserUtils userUtils;
     private final UserService userService;
     private final PatientService patientService;
-    private final RoleRepository roleRepository;
 
-    public AuthController(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RegistrationService registrationService, ClinicMapper clinicMapper, DoctorMapper doctorMapper, DoctorService doctorService, UserUtils userUtils, UserService userService, PatientService patientService, RoleRepository roleRepository) {
+    public AuthController(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RegistrationService registrationService, ClinicMapper clinicMapper, DoctorMapper doctorMapper, DoctorService doctorService, UserUtils userUtils, UserService userService, PatientService patientService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.registrationService = registrationService;
@@ -57,7 +56,6 @@ public class AuthController {
         this.userUtils = userUtils;
         this.userService = userService;
         this.patientService = patientService;
-        this.roleRepository = roleRepository;
     }
 
     @PostMapping("/registration/clinic")
@@ -67,7 +65,7 @@ public class AuthController {
             throw new NotCreateException(ResponseMessageError.createErrorMsg(bindingResult.getFieldErrors()));
         }
         String[] loginPassword = registrationService.registrationClinic(clinicMapper.toClinic(clinicRegistrationDTO.clinic()),
-                doctorMapper.toDoctor(clinicRegistrationDTO.doctor(), roleRepository));
+                doctorMapper.toDoctor(clinicRegistrationDTO.doctor()));
         return Map.of("login", loginPassword[0], "password", loginPassword[1]);
     }
 
