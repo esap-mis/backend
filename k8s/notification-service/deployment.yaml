@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: default
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: docker.io/library/esap-mis-notification-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "k8s"
+
+            # Kafka
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: kafka_bootstrap_servers
+            - name: MAIL_TOPIC_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: mail_topic_name
+            - name: NOTIFICATIONS_TOPIC_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: notifications_topic_name
+
+            - name: MAIL_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: mail_username
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esap-secret
+                  key: mail_password
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "125m"
+            limits:
+              memory: "512Mi"
+              cpu: "250m"
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            failureThreshold: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8082
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            periodSeconds: 5
+            failureThreshold: 3
+      restartPolicy: Always

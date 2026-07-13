@@ -46,6 +46,7 @@ dependencies {
     annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.4")
     implementation("com.auth0:java-jwt:4.3.0")
+    implementation("io.micrometer:micrometer-registry-prometheus")
 }
 
 dependencyManagement {
