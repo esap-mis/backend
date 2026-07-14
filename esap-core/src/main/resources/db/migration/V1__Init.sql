@@ -80,11 +80,20 @@ create table appointments
     FOREIGN KEY (patient_id) REFERENCES patients (id),
     FOREIGN KEY (schedule_id) REFERENCES schedules (id)
 );
+
 create table role (
     id bigserial not null,
     name varchar(255) not null,
     primary key (id)
 );
+insert into role (name)
+values ('ROLE_ADMIN'),
+       ('ROLE_CHIEF_DOCTOR'),
+       ('ROLE_DOCTOR'),
+       ('ROLE_REGISTRANT'),
+       ('ROLE_LABORATORY'),
+       ('ROLE_PATIENT');
+
 create table role_doctor (
     id bigserial not null,
     role_id bigint not null,

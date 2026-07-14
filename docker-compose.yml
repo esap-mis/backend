@@ -12,12 +12,6 @@ services:
     ports: ["15432:5432"]
     volumes:
       - db-data:/var/lib/postgresql/data
-    command: >
-      bash -c '
-        echo "CREATE DATABASE esap;" > /docker-entrypoint-initdb.d/init_db.sql
-        echo "\c esap;" >> /docker-entrypoint-initdb.d/init_db.sql
-        exec docker-entrypoint.sh postgres
-      '
     restart: "no"
     networks:
       - kafka-net
