@@ -2,12 +2,13 @@ package ru.javavlsu.kb.notificationservice.kafka
 
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 
 @Component
-class KafkaProducer constructor(
+class KafkaProducer @Autowired constructor(
     @Value("\${notifications.topic.name}")
     private val notificationsTopic: String,
     private val kafkaTemplate: KafkaTemplate<String, String>

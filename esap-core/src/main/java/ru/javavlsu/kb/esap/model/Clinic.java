@@ -1,15 +1,12 @@
 package ru.javavlsu.kb.esap.model;
 
-import java.util.List;
-import java.util.Objects;
-
-import org.hibernate.annotations.Cascade;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -30,8 +27,8 @@ public class Clinic {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @OneToMany(mappedBy = "clinic", fetch = FetchType.LAZY)
-    @Cascade({org.hibernate.annotations.CascadeType.PERSIST, org.hibernate.annotations.CascadeType.SAVE_UPDATE})
+    @OneToMany(mappedBy = "clinic", fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonIgnore
     private List<User> users;
 
