@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service       # Это имя будет использоваться как DNS-имя
+  namespace: default
+spec:
+  selector:
+    app: notification-service      # Должен совпадать с лейблом в Deployment
+  ports:
+    - protocol: TCP
+      port: 80                     # Порт, по которому будут обращаться другие сервисы
+      targetPort: 8080             # Порт вашего приложения в контейнере
+  type: ClusterIP                  # Стандартный тип для внутреннего доступа [citation:12]

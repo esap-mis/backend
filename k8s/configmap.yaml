@@ -1,0 +1,21 @@
+# k8s/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: esap-config
+  namespace: default
+data:
+  # db_host: "postgres-service"
+  db_port: "5432"
+  db_name: "esap"
+  db_url: "jdbc:postgresql://postgres-service:5432/esap"
+  app_name: "esap"
+  log_level: "INFO"
+  kafka_bootstrap_servers: "kafka-0.kafka-headless.default.svc.cluster.local:9092"
+  mail_topic_name: "esap.users.mail"
+  notifications_topic_name: "esap.users.notifications.mobile"
+  api_key: "fake-api-key-for-testing"
+  mail_host: "smtp.gmail.com"
+  mail_port: "587"
+  mail_username: "esap.mis.clinic@gmail.com"
+  api_url: "http://esap-service:8080" # Внутреннее DNS-имя
