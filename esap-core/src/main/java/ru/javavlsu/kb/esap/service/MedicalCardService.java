@@ -1,8 +1,10 @@
 package ru.javavlsu.kb.esap.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.javavlsu.kb.esap.dto.notifications.NotificationMessage;
+import ru.javavlsu.kb.esap.dto.notifications.NotificationEvent;
+import ru.javavlsu.kb.esap.kafka.KafkaProducer;
 import ru.javavlsu.kb.esap.model.Doctor;
 import ru.javavlsu.kb.esap.model.MedicalCard;
 import ru.javavlsu.kb.esap.model.MedicalRecord;
@@ -17,16 +19,18 @@ import java.util.List;
 @Service
 @Transactional(readOnly = true)
 public class MedicalCardService {
+    public static final String ADD_MEDICAL_RECORD_REMINDER_TITLE = "Время проверить медицинскую карту";
+    public static final String ADD_MEDICAL_RECORD_REMINDER_BODY_TEMPLATE = "%s добавил новую запись в вашу медицинскую карту. Пожалуйста, проверьте результаты.";
     private final MedicalCardRepository medicalCardRepository;
     private final MedicalRecordRepository medicalRecordRepository;
-    private final NotificationService notificationService;
+    private final KafkaProducer kafkaProducer;
 
     private static final String DEFAULT_ANALYSIS_RESULT = "Не готов";
 
-    public MedicalCardService(MedicalCardRepository medicalCardRepository, MedicalRecordRepository medicalRecordRepository, NotificationService notificationService) {
+    public MedicalCardService(MedicalCardRepository medicalCardRepository, MedicalRecordRepository medicalRecordRepository, KafkaProducer kafkaProducer) {
         this.medicalCardRepository = medicalCardRepository;
         this.medicalRecordRepository = medicalRecordRepository;
-        this.notificationService = notificationService;
+        this.kafkaProducer = kafkaProducer;
     }
 
     //TODO Убрать метод или заменить (используется только для соранения medicalRecord)
@@ -51,7 +55,7 @@ public class MedicalCardService {
     }
 
     @Transactional
-    public void createMedicalRecord(MedicalRecord medicalRecord, MedicalCard medicalCard, Doctor doctor) {
+    public void createMedicalRecord(MedicalRecord medicalRecord, MedicalCard medicalCard, Doctor doctor) throws JsonProcessingException {
         medicalRecord.setFioAndSpecializationDoctor(doctor.getSpecialization() + ": " + doctor.getFio());
         medicalRecord.setMedicalCard(medicalCard);
         medicalRecord.getAnalyzes().forEach(analysis -> analysis.setMedicalRecord(medicalRecord));
@@ -64,13 +68,13 @@ public class MedicalCardService {
         sendMedicalRecordAddReminder(record, doctor);
     }
 
-    private void sendMedicalRecordAddReminder(MedicalRecord medicalRecord, Doctor doctor) {
-        NotificationMessage message = NotificationMessage.builder()
-                .title("Время проверить медицинскую карту")
-                .body(String.format("%s добавил новую запись в вашу медицинскую карту. Пожалуйста, проверьте результаты.",
-                        doctor.getFio()))
-                .build();
-
-        notificationService.sendNotificationToUser(medicalRecord.getMedicalCard().getPatient(), message);
+    private void sendMedicalRecordAddReminder(MedicalRecord medicalRecord, Doctor doctor) throws JsonProcessingException {
+        final NotificationEvent notificationEvent = new NotificationEvent(
+                medicalRecord.getMedicalCard().getPatient().getId(),
+                ADD_MEDICAL_RECORD_REMINDER_TITLE,
+                String.format(ADD_MEDICAL_RECORD_REMINDER_BODY_TEMPLATE,
+                        doctor.getFio())
+        );
+        kafkaProducer.sendNotificationEvent(notificationEvent);
     }
 }

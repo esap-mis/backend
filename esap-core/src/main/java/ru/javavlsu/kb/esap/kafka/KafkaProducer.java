@@ -3,22 +3,24 @@ package ru.javavlsu.kb.esap.kafka;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-import ru.javavlsu.kb.esap.dto.notifications.NotificationMessage;
-import ru.javavlsu.kb.esap.model.User;
+import ru.javavlsu.kb.esap.dto.notifications.NotificationEvent;
+import ru.javavlsu.kb.esap.dto.notifications.TokenRegistrationEvent;
+import ru.javavlsu.kb.esap.dto.notifications.PatientCreatedEvent;
 
 @Slf4j
 @Component
 public class KafkaProducer {
 
-    @Value("${mail.topic.name}")
-    private String mailTopic;
-    @Value("${notifications.topic.name}")
-    private String notificationsTopic;
+    @Value("${notification.kafka.topic.welcome-email}")
+    private String welcomeEmailTopic;
+    @Value("${notification.kafka.topic.push-notification}")
+    private String pushNotificationTopic;
+    @Value("${notification.kafka.topic.token-registration}")
+    private String tokenRegistrationTopic;
     private final ObjectMapper objectMapper;
     private final KafkaTemplate<String, String> kafkaTemplate;
 
@@ -28,28 +30,31 @@ public class KafkaProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    private void sendMessageToKafka(Object data, String topic, String logMessage) {
-        String message;
-        try {
-            message = objectMapper.writeValueAsString(data);
-        } catch (JsonProcessingException e) {
-            log.error("Error parsing to JSON", e);
-            throw new IllegalArgumentException("Error parsing to JSON", e);
-        }
-
-        ProducerRecord<String, String> record = new ProducerRecord<>(topic, message);
-        record.headers().add("type", MessageType.COMMAND.name().getBytes());
-        kafkaTemplate.send(record);
-        log.info(logMessage);
+    public void sendTokenRegistrationEvent(TokenRegistrationEvent tokenRegistrationEvent) throws JsonProcessingException {
+        kafkaTemplate.send(
+                tokenRegistrationTopic,
+                tokenRegistrationEvent.userId().toString(),
+                objectMapper.writeValueAsString(tokenRegistrationEvent)
+        );
+        log.info("Send token registration event {token={}}", tokenRegistrationEvent.token());
     }
 
-    public void sendPatientData(User user) {
-        String logMessage = "Send data for patient {id=" + user.getId() + "}";
-        sendMessageToKafka(user, mailTopic, logMessage);
+    public void sendPatientCreatedEvent(PatientCreatedEvent patientCreatedEvent) throws JsonProcessingException {
+        kafkaTemplate.send(
+                welcomeEmailTopic,
+                patientCreatedEvent.email(),
+                objectMapper.writeValueAsString(patientCreatedEvent)
+        );
+        log.info("Sending patient created event to Kafka. Topic: {}, Email: {}",
+                welcomeEmailTopic, patientCreatedEvent.email());
     }
 
-    public void sendUserDeviceNotification(NotificationMessage notification) {
-        String logMessage = "Send notification to user device {token=" + notification.getTo() + "}";
-        sendMessageToKafka(notification, notificationsTopic, logMessage);
+    public void sendNotificationEvent(NotificationEvent notificationEvent) throws JsonProcessingException {
+        kafkaTemplate.send(
+                pushNotificationTopic,
+                notificationEvent.userId().toString(),
+                objectMapper.writeValueAsString(notificationEvent)
+        );
+        log.info("Send notification to user {id={}}", notificationEvent.userId());
     }
 }

@@ -16,10 +16,12 @@ import java.util.Map;
 @Configuration
 public class KafkaConfig {
 
-    @Value("${mail.topic.name}")
-    private String mailTopic;
-    @Value("${notifications.topic.name}")
-    private String notificationsTopic;
+    @Value("${notification.kafka.topic.welcome-email}")
+    private String welcomeEmailTopic;
+    @Value("${notification.kafka.topic.push-notification}")
+    private String pushNotificationTopic;
+    @Value("${notification.kafka.topic.token-registration}")
+    private String tokenRegistrationTopic;
     private final KafkaProperties kafkaProperties;
 
     @Autowired
@@ -39,18 +41,27 @@ public class KafkaConfig {
     }
 
     @Bean
-    public NewTopic mailTopic() {
+    public NewTopic welcomeEmailTopic() {
         return TopicBuilder
-                .name(mailTopic)
+                .name(welcomeEmailTopic)
                 .partitions(1)
                 .replicas(1)
                 .build();
     }
 
     @Bean
-    public NewTopic notificationsTopic() {
+    public NewTopic pushNotificationTopic() {
         return TopicBuilder
-                .name(notificationsTopic)
+                .name(pushNotificationTopic)
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic tokenRegistrationTopic() {
+        return TopicBuilder
+                .name(tokenRegistrationTopic)
                 .partitions(1)
                 .replicas(1)
                 .build();

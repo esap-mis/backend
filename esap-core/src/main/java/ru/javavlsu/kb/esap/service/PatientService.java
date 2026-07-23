@@ -1,5 +1,6 @@
 package ru.javavlsu.kb.esap.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -13,7 +14,8 @@ import ru.javavlsu.kb.esap.dto.PatientDTO;
 import ru.javavlsu.kb.esap.dto.PatientStatisticsByAgeDTO;
 import ru.javavlsu.kb.esap.dto.PatientStatisticsByGenderDTO;
 import ru.javavlsu.kb.esap.dto.ScheduleResponseDTO.PatientResponseDTO;
-import ru.javavlsu.kb.esap.dto.notifications.NotificationMessage;
+import ru.javavlsu.kb.esap.dto.notifications.NotificationEvent;
+import ru.javavlsu.kb.esap.dto.notifications.PatientCreatedEvent;
 import ru.javavlsu.kb.esap.mapper.PatientMapper;
 import ru.javavlsu.kb.esap.model.*;
 import ru.javavlsu.kb.esap.repository.PatientRepository;
@@ -39,17 +41,19 @@ public class PatientService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final KafkaProducer kafkaProducer;
-    private final NotificationService notificationService;
     private final AppointmentService appointmentService;
 
-    public PatientService(PatientRepository patientRepository, PatientMapper patientMapper, LoginPasswordGenerator lpg, PasswordEncoder passwordEncoder, RoleRepository roleRepository, KafkaProducer kafkaProducer, NotificationService notificationService, AppointmentService appointmentService) {
+    public static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    public static final String APPOINTMENT_REMINDER_TITLE = "Напоминание о визите!";
+    public static final String APPOINTMENT_REMINDER_BODY_TEMPLATE = "Уважаемый пациент, напоминаем вам о предстоящем визите в нашу поликлинику \"%s\". Дата и время визита: %s. По адресу: %s.";
+
+    public PatientService(PatientRepository patientRepository, PatientMapper patientMapper, LoginPasswordGenerator lpg, PasswordEncoder passwordEncoder, RoleRepository roleRepository, KafkaProducer kafkaProducer, AppointmentService appointmentService) {
         this.patientMapper = patientMapper;
         this.patientRepository = patientRepository;
         this.lpg = lpg;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.kafkaProducer = kafkaProducer;
-        this.notificationService = notificationService;
         this.appointmentService = appointmentService;
     }
 
@@ -83,7 +87,7 @@ public class PatientService {
     }
 
     @Transactional
-    public Patient create(PatientDTO patientDTO, Clinic clinic) {
+    public Patient create(PatientDTO patientDTO, Clinic clinic) throws JsonProcessingException {
         Patient patient = patientMapper.toPatient(patientDTO);
         patient.setClinic(clinic);
         patient.setMedicalCard(new MedicalCard(patient));
@@ -97,7 +101,7 @@ public class PatientService {
         patient.setLogin(generatedLogin);
         patientRepository.save(patient);
         patient.setPassword(generatedPassword);
-        kafkaProducer.sendPatientData(patient);
+        kafkaProducer.sendPatientCreatedEvent(PatientCreatedEvent.from(patient));
 //        TODO FOR TESTS
 //        Patient patientCreate = patientRepository.save(patient);
 //        patientCreate.setLogin("00" + patientCreate.getId().toString());
@@ -153,26 +157,22 @@ public class PatientService {
     }
 
     @Scheduled(fixedDelay = 60 * 60 * 1000)
-    public void sendUpcomingAppointmentReminders() {
-        NotificationMessage message = NotificationMessage.builder()
-                .title("Напоминание о визите!")
-                .body("Уважаемый пациент, напоминаем вам о предстоящем визите в нашу поликлинику")
-                .build();
-
-        List<Patient> patients = patientRepository.findAll();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
-
+    public void sendUpcomingAppointmentReminders() throws JsonProcessingException {
+        final List<Patient> patients = patientRepository.findAll();
         for (Patient patient : patients) {
             Optional<Appointment> upcomingAppointment = appointmentService.getUpcomingAppointmentByPatient(patient);
             if (upcomingAppointment.isPresent()) {
-                LocalDateTime formattedDateTime = upcomingAppointment.get().getDate()
+                final LocalDateTime formattedDateTime = upcomingAppointment.get().getDate()
                         .atTime(upcomingAppointment.get().getStartAppointments());
-
-                String messageBody = message.getBody() + String.format(" \"%s\". Дата и время визита: %s. По адресу: %s.",
-                        patient.getClinic().getName(), formattedDateTime.format(formatter), patient.getClinic().getAddress());
-                message.setBody(messageBody);
-
-                notificationService.sendNotificationToUser(patient, message);
+                final NotificationEvent notificationEvent = new NotificationEvent(
+                        patient.getId(),
+                        APPOINTMENT_REMINDER_TITLE,
+                        String.format(APPOINTMENT_REMINDER_BODY_TEMPLATE,
+                                patient.getClinic().getName(),
+                                formattedDateTime.format(FORMATTER),
+                                patient.getClinic().getAddress())
+                );
+                kafkaProducer.sendNotificationEvent(notificationEvent);
             } else {
                 log.debug("Patient ID {} has no upcoming appointments", patient.getId());
             }

@@ -2,8 +2,8 @@ name: esap-mis
 version: '3.9'
 
 services:
-  db:
-    container_name: db
+  esap-db:
+    container_name: esap_db
     image: postgres:14.7-alpine
     environment:
       - POSTGRES_USER=postgres
@@ -11,7 +11,21 @@ services:
       - POSTGRES_DB=esap
     ports: ["15432:5432"]
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - esap-db:/var/lib/postgresql/data
+    restart: "no"
+    networks:
+      - kafka-net
+
+  notifications-db:
+    container_name: notifications_db
+    image: postgres:14.7-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=notifications
+    ports: [ "25432:5432" ]
+    volumes:
+      - notifications-db:/var/lib/postgresql/data
     restart: "no"
     networks:
       - kafka-net
@@ -36,12 +50,12 @@ services:
     ports: ["8080:8080"]
     environment:
       - SERVER_PORT=8080
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/esap
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://esap-db:5432/esap
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
+      # - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
     networks:
       - kafka-net
 
@@ -138,9 +152,12 @@ services:
     ports: [ "8083:8083" ]
     environment:
       - server.port=8083
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://notifications-db:5432/notifications
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - MAIL_USERNAME=esap.mis.clinic@gmail.com
-      - MAIL_PASSWORD=nwom bjed misl rrdf
+      - MAIL_PASSWORD=uczp kjly qtzd rvxi
     networks:
       - kafka-net
 
@@ -171,7 +188,8 @@ networks:
     driver: bridge
 
 volumes:
-  db-data:
-  pgadmin-data:
+  esap-db:
+  notifications-db:
+  # pgadmin-data:
   kafka:
-  ollama:
+  # ollama:

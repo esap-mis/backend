@@ -1,6 +1,7 @@
 package ru.javavlsu.kb.esap.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,7 @@ public class MedicalCardController {
     @PostMapping("/patient/{id}")
     public ResponseEntity<HttpStatus> saveMedicalRecord(@PathVariable("id") Long id,
                                                         @Valid @RequestBody MedicalRecordRequestDTO medicalRecordRequestDTO,
-                                                        BindingResult bindingResult) {
+                                                        BindingResult bindingResult) throws JsonProcessingException {
         if (bindingResult.hasErrors()) {
             throw new NotCreateException(ResponseMessageError.createErrorMsg(bindingResult.getFieldErrors()));
         }
