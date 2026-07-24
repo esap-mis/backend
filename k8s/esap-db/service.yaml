@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-service
+  name: esap-db-service
 spec:
   selector:
-    app: postgres
+    app: esap-db
   ports:
     - port: 5432
       targetPort: 5432

@@ -34,18 +34,18 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: esap-config
-                  key: db_url
+                  key: esap_db_url
             #Secret
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
                   name: esap-secret
-                  key: db_user
+                  key: esap_db_user
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: esap-secret
-                  key: db_password
+                  key: esap_db_password
 
             # Kafka
             - name: KAFKA_BOOTSTRAP_SERVERS
@@ -63,6 +63,11 @@ spec:
                 configMapKeyRef:
                   name: esap-config
                   key: notifications_topic_name
+            - name: NOTIFICATIONS_TOKENS_TOPIC_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: notifications_tokens_topic_name
           resources:
             requests:
               memory: "512Mi"

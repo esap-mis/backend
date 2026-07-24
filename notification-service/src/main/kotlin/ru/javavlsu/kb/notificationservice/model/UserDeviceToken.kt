@@ -1,26 +1,30 @@
 package ru.javavlsu.kb.notificationservice.model
 
-import jakarta.persistence.*
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.index.CompoundIndex
+import org.springframework.data.mongodb.core.index.Indexed
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.Field
+
 
 /**
  * UserDeviceToken 23.07.2026 thewyolar
  * Copyright (c) 2026.
  */
-@Entity
-@Table(name = "user_device_tokens")
+@Document(collection = "user_device_tokens")
 class UserDeviceToken (
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    val id: String? = null,
 
-    @Column(name = "fcm_token", nullable = false)
+    @Field("fcm_token")
+    @Indexed(unique = true)
     val token: String,
 
-    @Column(name = "user_id", nullable = false)
+    @Field("user_id")
+    @Indexed
     val userId: Long,
 
-    @Column(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Field("status")
     var status: TokenStatus = TokenStatus.ACTIVE
 )

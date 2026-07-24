@@ -4,13 +4,11 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.FirebaseMessagingException
 import com.google.firebase.messaging.Message
 import com.google.firebase.messaging.Notification
-import org.apache.kafka.clients.producer.KafkaProducer
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import ru.javavlsu.kb.notificationservice.dto.NotificationEvent
 import ru.javavlsu.kb.notificationservice.model.TokenStatus
 import ru.javavlsu.kb.notificationservice.model.UserDeviceToken
-import ru.javavlsu.kb.notificationservice.repository.UserDeviceTokenRepository
 
 @Service
 class NotificationService(
