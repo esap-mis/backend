@@ -1,18 +1,19 @@
 # 1. Запустить кластер
 minikube start --cpus=4 --memory=5926
 
-# 2. Собрать Docker-образ внутри кластера
+# 2. Сначала нужно собрать jar-ы проектов и docker-образы
 # eval $(minikube docker-env)
 # docker build -t esap:local .
 minikube image load esap-mis-core
 minikube image load esap-mis-notification-service
-minikube image load esapmis/frontend
+minikube image load esapmis/frontend:v2
 # minikube addons enable ingress
 
 # 3. Применить манифесты
 kubectl apply -f k8s
 kubectl apply -f k8s/kafka
-kubectl apply -f k8s/postgres
+kubectl apply -f k8s/esap-db
+kubectl apply -f k8s/notifications-db
 kubectl apply -f k8s/notification-service
 kubectl apply -f k8s/esap-core
 kubectl apply -f k8s/frontend
@@ -20,6 +21,7 @@ kubectl apply -f k8s/frontend
 # 4. Проверить статус
 kubectl get pods -w
 kubectl logs deployment/esap-app
+kubectl logs deployment/notification-service
 
 # 5. Открыть доступ к приложению
 # kubectl port-forward service/esap-service 8080:8080

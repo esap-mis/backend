@@ -1,4 +1,4 @@
-package ru.javavlsu.kb.notificationservice.service
+package ru.javavlsu.kb.notificationservice.service.email
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -16,18 +16,18 @@ class EmailService(
 ) {
     private val log: Logger = LoggerFactory.getLogger(EmailService::class.java)
 
-    fun sendEmail(toAddress: String, subject: String?, message: String?) {
+    fun sendEmail(emailContent: EmailBuilder.EmailContent) {
         val simpleMailMessage = SimpleMailMessage()
         simpleMailMessage.from = email
-        simpleMailMessage.setTo(toAddress)
-        simpleMailMessage.subject = subject
-        simpleMailMessage.text = message
+        simpleMailMessage.setTo(emailContent.to)
+        simpleMailMessage.subject = emailContent.subject
+        simpleMailMessage.text = emailContent.body
 
         try {
             emailSender.send(simpleMailMessage)
-            log.info("Email notification sent successfully to: {token=$toAddress}")
+            log.info("Email notification sent successfully to: {token=${emailContent.to}}")
         } catch (e: MailException) {
-            log.error("Error sending email notification to {token=" + toAddress + "} : {error=" + e.message + "}")
+            log.error("Error sending email notification to {token=" + emailContent.to + "} : {error=" + e.message + "}")
         }
     }
 }

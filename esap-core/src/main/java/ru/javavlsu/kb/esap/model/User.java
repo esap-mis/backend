@@ -46,9 +46,6 @@ public class User {
     @Min(value = 1, message = "Не верно указан пол")
     private int gender;
 
-    @OneToMany(mappedBy = "user")
-    private List<UserDeviceToken> tokens;
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

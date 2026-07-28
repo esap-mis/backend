@@ -44,6 +44,11 @@ spec:
                 configMapKeyRef:
                   name: esap-config
                   key: notifications_topic_name
+            - name: NOTIFICATIONS_TOKENS_TOPIC_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: notifications_tokens_topic_name
 
             - name: MAIL_USERNAME
               valueFrom:
@@ -55,6 +60,33 @@ spec:
                 secretKeyRef:
                   name: esap-secret
                   key: mail_password
+
+            - name: MONGO_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: notifications_db_host
+            - name: MONGO_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: notifications_db_port
+            - name: MONGO_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: notifications_db
+            #Secret
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: esap-secret
+                  key: notifications_db_user
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esap-secret
+                  key: notifications_db_password
           resources:
             requests:
               memory: "256Mi"

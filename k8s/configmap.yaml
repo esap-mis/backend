@@ -5,15 +5,20 @@ metadata:
   name: esap-config
   namespace: default
 data:
-  # db_host: "postgres-service"
-  db_port: "5432"
-  db_name: "esap"
-  db_url: "jdbc:postgresql://postgres-service:5432/esap"
   app_name: "esap"
   log_level: "INFO"
+  # esap db
+  esap_db: "esap"
+  esap_db_url: "jdbc:postgresql://esap-db-service:5432/esap"
+  # notifications db
+  notifications_db: "notifications"
+  notifications_db_host: "notifications-db-service"
+  notifications_db_port: "27017"
+  # kafka
   kafka_bootstrap_servers: "kafka-0.kafka-headless.default.svc.cluster.local:9092"
-  mail_topic_name: "esap.users.mail"
-  notifications_topic_name: "esap.users.notifications.mobile"
+  mail_topic_name: "user.registered.welcome-email"
+  notifications_topic_name: "user.notification.push.requested"
+  notifications_tokens_topic_name: "user.device.token.registered"
   api_key: "fake-api-key-for-testing"
   mail_host: "smtp.gmail.com"
   mail_port: "587"

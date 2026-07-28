@@ -18,13 +18,15 @@ import org.springframework.kafka.core.ProducerFactory
  */
 @Configuration
 class KafkaConfig @Autowired constructor(
-    @Value("\${mail.topic.name}")
-    private val mailTopic: String,
-    @Value("\${notifications.topic.name}")
-    private val notificationsTopic: String,
+    @Value("\${notification.kafka.topic.welcome-email}")
+    private val welcomeEmailTopic: String,
+    @Value("\${notification.kafka.topic.push-notification}")
+    private val pushNotificationTopic: String,
+    @Value("\${notification.kafka.topic.token-registration}")
+    private val tokenRegistrationTopic: String,
     private val kafkaProperties: KafkaProperties
 ) {
-    
+
     @Bean
     fun kafkaTemplate(): KafkaTemplate<String, String> {
         return KafkaTemplate(producerFactory())
@@ -37,23 +39,32 @@ class KafkaConfig @Autowired constructor(
     }
     
     @Bean
-    fun mailTopic(): NewTopic {
+    fun welcomeEmailTopic(): NewTopic {
         return TopicBuilder
-            .name(mailTopic)
+            .name(welcomeEmailTopic)
             .partitions(1)
             .replicas(1)
             .build()
     }
 
     @Bean
-    fun notificationsTopic(): NewTopic {
+    fun pushNotificationTopic(): NewTopic {
         return TopicBuilder
-            .name(notificationsTopic)
+            .name(pushNotificationTopic)
             .partitions(1)
             .replicas(1)
             .build()
     }
-    
+
+    @Bean
+    fun tokenRegistrationTopic(): NewTopic {
+        return TopicBuilder
+            .name(tokenRegistrationTopic)
+            .partitions(1)
+            .replicas(1)
+            .build()
+    }
+
     @Bean
     fun objectMapper(): ObjectMapper {
         return ObjectMapper();

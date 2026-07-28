@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications-db
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notifications-db
+  template:
+    metadata:
+      labels:
+        app: notifications-db
+    spec:
+      containers:
+        - name: notifications-db
+          image: mongo:6.0.8
+          env:
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: notifications_db
+            #Secret
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esap-secret
+                  key: notifications_db_password
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: esap-secret
+                  key: notifications_db_user
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - name: notifications-db
+              mountPath: /data/db
+      volumes:
+        - name: notifications-db
+          persistentVolumeClaim:
+            claimName: notifications-db-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: notifications-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi
+---

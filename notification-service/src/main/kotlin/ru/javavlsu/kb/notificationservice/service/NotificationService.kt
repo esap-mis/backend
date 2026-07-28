@@ -6,16 +6,29 @@ import com.google.firebase.messaging.Message
 import com.google.firebase.messaging.Notification
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import ru.javavlsu.kb.notificationservice.kafka.KafkaProducer
+import ru.javavlsu.kb.notificationservice.dto.NotificationEvent
+import ru.javavlsu.kb.notificationservice.model.TokenStatus
+import ru.javavlsu.kb.notificationservice.model.UserDeviceToken
 
 @Service
 class NotificationService(
-    private val firebaseMessaging: FirebaseMessaging,
-    private val kafkaProducer: KafkaProducer,
+    val firebaseMessaging: FirebaseMessaging,
+    val userDeviceTokenService: UserDeviceTokenService,
 ) {
     private val log = LoggerFactory.getLogger(NotificationService::class.java)
 
-    fun sendNotificationByToken(to: String, title: String, body: String) {
+    fun sendNotificationToUser(notificationEvent: NotificationEvent) {
+        log.info("Starting notification send. UserId: {}, Title: {}", notificationEvent.userId, notificationEvent.title)
+        val userDevices: List<UserDeviceToken> = userDeviceTokenService.getUserDeviceTokensByUserId(notificationEvent.userId)
+        log.debug("Found {} devices for user {}. Devices: {}", userDevices.size, notificationEvent.userId, userDevices.map { it.id })
+        val activeDevices = userDevices.filter { it.status == TokenStatus.ACTIVE }
+        activeDevices.forEach { userDevice ->
+            log.debug("Sending notification to device {} for user {}", userDevice.id, notificationEvent.userId)
+            sendNotificationByToken(userDevice.token, notificationEvent.title, notificationEvent.body)
+        }
+    }
+
+    private fun sendNotificationByToken(to: String, title: String, body: String) {
         val notification = Notification.builder()
             .setTitle(title)
             .setBody(body)
@@ -28,10 +41,10 @@ class NotificationService(
 
         try {
             firebaseMessaging.send(message)
-            log.info("Push-notification sent successfully to device: {token=$to}")
+            log.info("Push notification sent successfully to device: {token=$to}")
         } catch (e: FirebaseMessagingException) {
-            kafkaProducer.sendTokenStatusMessage(to)
-            log.error("Error sending push-notification: {error=${e.message}}")
+            userDeviceTokenService.disableToken(to)
+            log.error("Error sending push notification: {error=${e.message}}")
         }
     }
 }
