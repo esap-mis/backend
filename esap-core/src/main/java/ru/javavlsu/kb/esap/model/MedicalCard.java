@@ -4,9 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import java.util.List;
 import java.util.Objects;
@@ -34,8 +31,7 @@ public class MedicalCard {
     private Long id;
 
     @Column(name = "record")
-    @OneToMany(mappedBy = "medicalCard", fetch = FetchType.LAZY)
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE)
+    @OneToMany(mappedBy = "medicalCard", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
 //    @Fetch(FetchMode.SUBSELECT)
     private List<MedicalRecord> medicalRecord;
 

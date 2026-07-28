@@ -10,9 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.javavlsu.kb.esap.dto.PatientDTO;
-import ru.javavlsu.kb.esap.dto.PatientStatisticsByAgeDTO;
-import ru.javavlsu.kb.esap.dto.PatientStatisticsByGenderDTO;
+import ru.javavlsu.kb.esap.dto.*;
 import ru.javavlsu.kb.esap.dto.ScheduleResponseDTO.PatientResponseDTO;
 import ru.javavlsu.kb.esap.dto.notifications.NotificationEvent;
 import ru.javavlsu.kb.esap.dto.notifications.PatientCreatedEvent;
@@ -178,4 +176,14 @@ public class PatientService {
             }
         }
     }
+
+    public List<PatientResponseDTO> findByFullName(String fullName) {
+        log.debug("class:PatientService, method:findByFullName, sql:findByFullName");
+        final List<Patient> patients = patientRepository.findByFullName(fullName);
+        if (patients.isEmpty()) {
+            throw new NotFoundException("Patient not found");
+        }
+        return patientMapper.toPatientResponseDTOList(patients);
+    }
+
 }

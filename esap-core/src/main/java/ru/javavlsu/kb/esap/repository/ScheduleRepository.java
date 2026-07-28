@@ -14,6 +14,9 @@ import java.util.Optional;
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     List<Schedule> findAllByDoctorId(Long id);
 
+    @Query("SELECT s FROM Schedule s WHERE s.doctor.id = :doctorId AND s.date = :date")
+    Optional<Schedule> findAllByDoctorAndDate(@Param("doctorId") Long doctorId, @Param("date") LocalDate date);
+
     @Query("SELECT s FROM Schedule s WHERE s.doctor.clinic = :clinic AND s.date = :date")
     List<Schedule> findAllByClinic(@Param("date") LocalDate date, @Param("clinic") Clinic clinic);
 

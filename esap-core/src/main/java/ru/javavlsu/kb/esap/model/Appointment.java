@@ -48,6 +48,10 @@ public class Appointment {
     @JsonIgnore
     private Schedule schedule;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private AppointmentStatus status = AppointmentStatus.CONFIRMED;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

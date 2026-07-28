@@ -101,4 +101,22 @@ public class DoctorService {
         log.debug("class:DoctorService, method:update, sql:save");
         return doctorRepository.save(doctor);
     }
+
+    public List<DoctorResponseDTO> findByFullName(String fullName) {
+        log.debug("class:DoctorService, method:findByFullName, sql:findByFullName");
+        final List<Doctor> doctors = doctorRepository.findByFullName(fullName);
+        if (doctors.isEmpty()) {
+            throw new NotFoundException("Doctor not found");
+        }
+        return doctorMapper.toDoctorResponseDTOList(doctors);
+    }
+
+    public List<DoctorResponseDTO> findBySpecialization(String specialization) {
+        log.debug("class:DoctorService, method:findBySpecialization, sql:findBySpecialization");
+        final List<Doctor> doctors = doctorRepository.findBySpecialization(specialization);
+        if (doctors.isEmpty()) {
+            throw new NotFoundException("Doctor not found");
+        }
+        return doctorMapper.toDoctorResponseDTOList(doctors);
+    }
 }

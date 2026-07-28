@@ -1,14 +1,12 @@
 package ru.javavlsu.kb.esap.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.javavlsu.kb.esap.dto.AppointmentsCountByDayDTO;
 import ru.javavlsu.kb.esap.dto.AppointmentDTO;
-import ru.javavlsu.kb.esap.dto.PatientAppointmentDTO;
 import ru.javavlsu.kb.esap.dto.ScheduleDTO;
 import ru.javavlsu.kb.esap.dto.ScheduleResponseDTO.AppointmentResponseDTO;
 import ru.javavlsu.kb.esap.dto.ScheduleResponseDTO.ScheduleResponseDTO;
@@ -65,13 +63,12 @@ public class ScheduleController {
     }
 
     @PostMapping("/{id}/appointment")
-    public ResponseEntity<HttpStatus> addAppointment(@PathVariable("id") Long id, @RequestBody @Valid AppointmentDTO appointmentDTO,
-                                                     BindingResult bindingResult) {
+    public ResponseEntity<AppointmentResponseDTO> addAppointment(@PathVariable("id") Long id, @RequestBody @Valid AppointmentDTO appointmentDTO,
+                                                         BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new NotCreateException(ResponseMessageError.createErrorMsg(bindingResult.getFieldErrors()));
         }
-        appointmentService.create(appointmentDTO, id);
-        return ResponseEntity.ok(HttpStatus.OK);
+        return ResponseEntity.ok(appointmentService.create(appointmentDTO, id));
     }
 
     @GetMapping("/day")
@@ -93,15 +90,33 @@ public class ScheduleController {
         return appointmentService.getAppointmentsCountByDay(doctor);
     }
 
-    @GetMapping("/appointments")
-    public ResponseEntity<List<?>> getUserAppointments() {
+    @GetMapping("/appointments/upcoming")
+    public ResponseEntity<List<?>> getUpcomingUserAppointments() {
         UserDetails ud = userUtils.UserDetails();
         if (ud.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_PATIENT"))) {
             Patient patient = (Patient) ud.getUser();
-            return ResponseEntity.ok(appointmentService.getAppointmentsForUser(patient));
+            return ResponseEntity.ok(appointmentService.getUpcomingAppointmentsForUser(patient));
         } else {
             Doctor doctor = (Doctor) ud.getUser();
-            return ResponseEntity.ok(appointmentService.getAppointmentsForUser(doctor));
+            return ResponseEntity.ok(appointmentService.getUpcomingAppointmentsForUser(doctor));
         }
+    }
+
+    @GetMapping("/appointments/past")
+    public ResponseEntity<List<?>> getPastUserAppointments() {
+        UserDetails ud = userUtils.UserDetails();
+        if (ud.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_PATIENT"))) {
+            Patient patient = (Patient) ud.getUser();
+            return ResponseEntity.ok(appointmentService.getPastAppointmentsForUser(patient));
+        } else {
+            Doctor doctor = (Doctor) ud.getUser();
+            return ResponseEntity.ok(appointmentService.getPastAppointmentsForUser(doctor));
+        }
+    }
+
+    @DeleteMapping("/appointment/{id}")
+    public ResponseEntity<Void> cancelAppointment(@PathVariable("id") Long id) {
+        appointmentService.cancelAppointment(id);
+        return ResponseEntity.ok().build();
     }
 }

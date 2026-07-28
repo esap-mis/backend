@@ -46,12 +46,14 @@ public class Patient extends User {
     private String email;
 
     @JsonIgnore
-    @OneToOne(mappedBy = "patient", fetch = FetchType.LAZY)
-    @Cascade(org.hibernate.annotations.CascadeType.PERSIST)
+    @OneToOne(mappedBy = "patient", cascade = CascadeType.PERSIST)
     private MedicalCard medicalCard;
 
     @JsonIgnore
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<Appointment> appointments;
 
+    public String getFullName(){
+        return this.lastName + " " + this.firstName + " " + this.patronymic;
+    }
 }

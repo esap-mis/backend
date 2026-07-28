@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -34,7 +32,7 @@ public class Doctor extends User {
     @OneToMany(mappedBy = "doctor", fetch = FetchType.LAZY)
     private List<Appointment> appointments;
 
-    public String getFio(){
+    public String getFullName(){
         return this.lastName + " " + this.firstName + " " + this.patronymic;
     }
 }

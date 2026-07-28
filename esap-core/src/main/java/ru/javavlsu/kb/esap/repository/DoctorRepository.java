@@ -15,8 +15,18 @@ import java.util.Optional;
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     Optional<Doctor> findByLogin(String login);
+
+    @Query("SELECT d FROM Doctor d WHERE " +
+            "LOWER(CONCAT(d.lastName, ' ', d.firstName, ' ', d.patronymic)) LIKE LOWER(CONCAT('%', :fullName, '%'))")
+    List<Doctor> findByFullName(@Param("fullName") String fullName);
+
+    @Query(value = "SELECT d from Doctor d WHERE LOWER(d.specialization) = LOWER(:specialization)")
+    List<Doctor> findBySpecialization(String specialization);
+
     Page<Doctor> findByClinicOrderByIdAsc(Clinic clinic, Pageable page);
+
     @Query("SELECT d FROM Doctor d JOIN FETCH d.schedules s WHERE s.date = :date AND d.clinic = :clinic ORDER BY d.id ASC")
     List<Doctor> findByClinicAndSchedulesDateOrderByIdAsc(@Param("clinic") Clinic clinic, @Param("date") LocalDate date);
+
     int countDoctorByClinic(Clinic clinic);
 }

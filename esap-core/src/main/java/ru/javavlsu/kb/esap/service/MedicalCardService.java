@@ -56,7 +56,7 @@ public class MedicalCardService {
 
     @Transactional
     public void createMedicalRecord(MedicalRecord medicalRecord, MedicalCard medicalCard, Doctor doctor) throws JsonProcessingException {
-        medicalRecord.setFioAndSpecializationDoctor(doctor.getSpecialization() + ": " + doctor.getFio());
+        medicalRecord.setFioAndSpecializationDoctor(doctor.getSpecialization() + ": " + doctor.getFullName());
         medicalRecord.setMedicalCard(medicalCard);
         medicalRecord.getAnalyzes().forEach(analysis -> analysis.setMedicalRecord(medicalRecord));
         medicalRecord.getAnalyzes().forEach(analysis -> {
@@ -73,7 +73,7 @@ public class MedicalCardService {
                 medicalRecord.getMedicalCard().getPatient().getId(),
                 ADD_MEDICAL_RECORD_REMINDER_TITLE,
                 String.format(ADD_MEDICAL_RECORD_REMINDER_BODY_TEMPLATE,
-                        doctor.getFio())
+                        doctor.getFullName())
         );
         kafkaProducer.sendNotificationEvent(notificationEvent);
     }
