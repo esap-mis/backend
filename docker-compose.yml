@@ -56,6 +56,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=validate
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - API_KEY=api_key
       # - SPRING_AI_OLLAMA_BASE_URL=http://ollama:11434
     networks:
       - kafka-net
