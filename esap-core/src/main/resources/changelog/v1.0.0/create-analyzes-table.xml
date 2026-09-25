@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="6" author="thewyolar">
+        <createTable tableName="analyzes" remarks="Анализы">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="result" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="medical_record_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="analyzes"
+                baseColumnNames="medical_record_id"
+                referencedTableName="medical_record"
+                referencedColumnNames="id"
+                constraintName="fk_analyzes_record"
+                onDelete="SET NULL"/>
+
+        <rollback>
+            <dropTable tableName="analyzes"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="7" author="thewyolar">
+        <createTable tableName="schedules" remarks="Расписание врачей">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date" type="DATE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="end_doctor_appointment" type="TIME">
+                <constraints nullable="true"/>
+            </column>
+            <column name="max_patient_per_day" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_doctor_appointment" type="TIME">
+                <constraints nullable="true"/>
+            </column>
+            <column name="doctor_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="schedules"
+                baseColumnNames="doctor_id"
+                referencedTableName="doctors"
+                referencedColumnNames="id"
+                constraintName="fk_schedules_doctor"
+                onDelete="SET NULL"/>
+
+        <rollback>
+            <dropTable tableName="schedules"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

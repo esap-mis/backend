@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="8" author="thewyolar">
+        <createTable tableName="appointments" remarks="Записи на прием">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date" type="DATE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="end_time" type="TIME">
+                <constraints nullable="true"/>
+            </column>
+            <column name="start_time" type="TIME">
+                <constraints nullable="true"/>
+            </column>
+            <column name="patient_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="schedule_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="appointments"
+                baseColumnNames="patient_id"
+                referencedTableName="patients"
+                referencedColumnNames="id"
+                constraintName="fk_appointments_patient"
+                onDelete="SET NULL"/>
+
+        <addForeignKeyConstraint
+                baseTableName="appointments"
+                baseColumnNames="schedule_id"
+                referencedTableName="schedules"
+                referencedColumnNames="id"
+                constraintName="fk_appointments_schedule"
+                onDelete="SET NULL"/>
+
+        <rollback>
+            <dropTable tableName="appointments"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

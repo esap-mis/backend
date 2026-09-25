@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <changeSet id="2" author="thewyolar">
+        <createTable tableName="doctors" remarks="Таблица врачей">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="login" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="patronymic" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="specialization" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="doctors"
+                columnNames="login"
+                constraintName="uk_doctors_login"/>
+
+        <rollback>
+            <dropTable tableName="doctors"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
