@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: default
+  labels:
+    app: api-gateway
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: docker.io/library/esap-mis-api-gateway:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: esap-secret
+                  key: jwt_secret
+            - name: AUTH_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: auth_service_url
+            - name: CLINIC_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: clinic_service_url
+            - name: SCHEDULE_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: schedule_service_url
+            - name: CORE_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: core_service_url
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "250m"
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8000
+            failureThreshold: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8000
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8000
+            periodSeconds: 5
+            failureThreshold: 3
+      restartPolicy: Always

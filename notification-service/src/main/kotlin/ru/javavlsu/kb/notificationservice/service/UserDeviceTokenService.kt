@@ -1,7 +1,7 @@
 package ru.javavlsu.kb.notificationservice.service
 
 import org.springframework.stereotype.Service
-import ru.javavlsu.kb.notificationservice.dto.TokenRegistrationEvent
+import ru.javavlsu.kb.common.event.TokenRegistrationEvent
 import ru.javavlsu.kb.notificationservice.exception.UserDeviceTokenNotFoundException
 import ru.javavlsu.kb.notificationservice.model.TokenStatus
 import ru.javavlsu.kb.notificationservice.model.UserDeviceToken

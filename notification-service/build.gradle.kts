@@ -19,6 +19,7 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":common"))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-aspectj")
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
@@ -35,7 +36,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("com.google.firebase:firebase-admin:9.1.1")
-    implementation("io.micrometer:micrometer-registry-prometheus")
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
 }
 
 kotlin {

@@ -10,3 +10,7 @@ LOGS_IS_UNDEFINED
 
 # Ignore Gradle build output directory
 build
+
+# AI for OpenIDE — local agent state (chat transcripts, memory, snapshots; may contain secrets).
+.aiforopenide/
+!.aiforopenide/config.json

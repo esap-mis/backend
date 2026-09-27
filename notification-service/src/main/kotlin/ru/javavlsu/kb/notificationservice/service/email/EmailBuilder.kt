@@ -1,7 +1,7 @@
 package ru.javavlsu.kb.notificationservice.service.email
 
 import org.springframework.stereotype.Component
-import ru.javavlsu.kb.notificationservice.dto.PatientCreatedEvent
+import ru.javavlsu.kb.common.event.PatientCreatedEvent
 
 /**
  * EmailBuilder 24.07.2026 thewyolar
@@ -19,23 +19,23 @@ class EmailBuilder {
     fun build(userData: PatientCreatedEvent): EmailContent {
         return EmailContent(
             to = userData.email,
-            subject = "Добро пожаловать в нашу клинику ${userData.clinicName}!",
+            subject = "Р”РѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ РІ РЅР°С€Сѓ РєР»РёРЅРёРєСѓ ${userData.clinicName}!",
             body = buildBody(userData)
         )
     }
 
     private fun buildBody(userData: PatientCreatedEvent): String {
         return """
-            Уважаемый ${userData.firstName}!
-            Вы успешно зарегистрированы в поликлинике "${userData.clinicName}".
+            РЈРІР°Р¶Р°РµРјС‹Р№ ${userData.firstName}!
+            Р’С‹ СѓСЃРїРµС€РЅРѕ Р·Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°РЅС‹ РІ РїРѕР»РёРєР»РёРЅРёРєРµ "${userData.clinicName}".
             
-            Ваши данные для входа в личный кабинет:
-            • Логин: ${userData.login}
-            • Пароль: ${userData.password}
+            Р’Р°С€Рё РґР°РЅРЅС‹Рµ РґР»СЏ РІС…РѕРґР° РІ Р»РёС‡РЅС‹Р№ РєР°Р±РёРЅРµС‚:
+            вЂў Р›РѕРіРёРЅ: ${userData.login}
+            вЂў РџР°СЂРѕР»СЊ: ${userData.password}
             
-            Для безопасности рекомендуем сменить пароль после первого входа.
-            С уважением,
-            Команда поликлиники "${userData.clinicName}"
+            Р”Р»СЏ Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё СЂРµРєРѕРјРµРЅРґСѓРµРј СЃРјРµРЅРёС‚СЊ РїР°СЂРѕР»СЊ РїРѕСЃР»Рµ РїРµСЂРІРѕРіРѕ РІС…РѕРґР°.
+            РЎ СѓРІР°Р¶РµРЅРёРµРј,
+            РљРѕРјР°РЅРґР° РїРѕР»РёРєР»РёРЅРёРєРё "${userData.clinicName}"
         """.trimIndent()
     }
 }

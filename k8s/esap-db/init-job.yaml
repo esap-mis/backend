@@ -1,0 +1,56 @@
+# One PostgreSQL instance, separate database per service.
+# The stock postgres image only initialises POSTGRES_DB, so the extra
+# databases are created by this one-shot job.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: esap-db-init
+  namespace: default
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: init
+          image: postgres:17-alpine
+          env:
+            - name: PGHOST
+              value: "esap-db-service"
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: esap-secret
+                  key: esap_db_user
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esap-secret
+                  key: esap_db_password
+            - name: PGDATABASE
+              value: "postgres"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              for i in $(seq 1 30); do
+                if pg_isready -h "$PGHOST" -U "$PGUSER" -d postgres; then break; fi
+                sleep 2
+              done
+              psql -v ON_ERROR_STOP=0 -d postgres <<'SQL'
+              CREATE DATABASE esap_auth;
+              CREATE DATABASE esap_clinic;
+              CREATE DATABASE esap_schedule;
+              CREATE DATABASE esap_core;
+              SQL
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: esap-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

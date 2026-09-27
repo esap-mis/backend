@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.stereotype.Component
-import ru.javavlsu.kb.notificationservice.dto.NotificationEvent
-import ru.javavlsu.kb.notificationservice.dto.TokenRegistrationEvent
-import ru.javavlsu.kb.notificationservice.dto.PatientCreatedEvent
+import ru.javavlsu.kb.common.event.NotificationEvent
+import ru.javavlsu.kb.common.event.TokenRegistrationEvent
+import ru.javavlsu.kb.common.event.PatientCreatedEvent
 import ru.javavlsu.kb.notificationservice.service.email.EmailService
 import ru.javavlsu.kb.notificationservice.service.NotificationService
 import ru.javavlsu.kb.notificationservice.service.UserDeviceTokenService
@@ -24,7 +24,7 @@ class KafkaConsumer @Autowired constructor(
 ) {
 
     @Throws(JsonProcessingException::class)
-    @KafkaListener(topics = ["\${notification.kafka.topic.welcome-email}"], groupId = "notification-service")
+    @KafkaListener(topics = ["${esap.kafka.topics.welcome-email}"], groupId = "notification-service")
     fun consumePatientCreatedEvent(@Payload message: String) {
         val patientCreatedEvent = objectMapper.readValue(message,
             PatientCreatedEvent::class.java)
@@ -33,7 +33,7 @@ class KafkaConsumer @Autowired constructor(
     }
 
     @Throws(JsonProcessingException::class)
-    @KafkaListener(topics = ["\${notification.kafka.topic.token-registration}"], groupId = "notification-service")
+    @KafkaListener(topics = ["${esap.kafka.topics.token-registration}"], groupId = "notification-service")
     fun consumeTokenRegistrationEvent(@Payload message: String) {
         val tokenRegistrationEvent = objectMapper.readValue(message,
             TokenRegistrationEvent::class.java)
@@ -41,7 +41,7 @@ class KafkaConsumer @Autowired constructor(
     }
 
     @Throws(JsonProcessingException::class)
-    @KafkaListener(topics = ["\${notification.kafka.topic.push-notification}"], groupId = "notification-service")
+    @KafkaListener(topics = ["${esap.kafka.topics.push-notification}"], groupId = "notification-service")
     fun consumeNotificationEvent(@Payload message: String) {
         val notificationEvent = objectMapper.readValue(message,
             NotificationEvent::class.java)

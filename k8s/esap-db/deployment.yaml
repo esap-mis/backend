@@ -1,4 +1,3 @@
-# k8s/postgres/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,7 +22,6 @@ spec:
                 configMapKeyRef:
                   name: esap-config
                   key: esap_db
-            #Secret
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -43,15 +41,3 @@ spec:
         - name: esap-db-storage
           persistentVolumeClaim:
             claimName: esap-db-pvc
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: esap-db-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
----

@@ -6,7 +6,7 @@ import com.google.firebase.messaging.Message
 import com.google.firebase.messaging.Notification
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import ru.javavlsu.kb.notificationservice.dto.NotificationEvent
+import ru.javavlsu.kb.common.event.NotificationEvent
 import ru.javavlsu.kb.notificationservice.model.TokenStatus
 import ru.javavlsu.kb.notificationservice.model.UserDeviceToken
 

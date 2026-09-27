@@ -1,13 +1,12 @@
-# k8s/deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: esap-app
+  name: esap-core
   namespace: default
   labels:
-    app: esap
+    app: esap-core
 spec:
-  replicas: 2  # Две реплики для отказоустойчивости
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -15,27 +14,24 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: esap
+      app: esap-core
   template:
     metadata:
       labels:
-        app: esap
+        app: esap-core
     spec:
       containers:
-        - name: esap-app
+        - name: esap-core
           image: docker.io/library/esap-mis-core:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
           env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: "k8s"
             - name: DB_URL
               valueFrom:
                 configMapKeyRef:
                   name: esap-config
-                  key: esap_db_url
-            #Secret
+                  key: esap_core_db_url
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
@@ -46,28 +42,41 @@ spec:
                 secretKeyRef:
                   name: esap-secret
                   key: esap_db_password
-
-            # Kafka
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: esap-secret
+                  key: jwt_secret
             - name: KAFKA_BOOTSTRAP_SERVERS
               valueFrom:
                 configMapKeyRef:
                   name: esap-config
                   key: kafka_bootstrap_servers
-            - name: MAIL_TOPIC_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: esap-config
-                  key: mail_topic_name
-            - name: NOTIFICATIONS_TOPIC_NAME
-              valueFrom:
-                configMapKeyRef:
-                  name: esap-config
-                  key: notifications_topic_name
             - name: NOTIFICATIONS_TOKENS_TOPIC_NAME
               valueFrom:
                 configMapKeyRef:
                   name: esap-config
                   key: notifications_tokens_topic_name
+            - name: AUTH_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: auth_service_url
+            - name: CLINIC_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: clinic_service_url
+            - name: SCHEDULE_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: schedule_service_url
+            - name: API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: api_key
           resources:
             requests:
               memory: "512Mi"
@@ -75,7 +84,6 @@ spec:
             limits:
               memory: "1Gi"
               cpu: "500m"
-
           startupProbe:
             httpGet:
               path: /actuator/health

@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clinic-service
+  namespace: default
+  labels:
+    app: clinic-service
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: clinic-service
+  template:
+    metadata:
+      labels:
+        app: clinic-service
+    spec:
+      containers:
+        - name: clinic-service
+          image: docker.io/library/esap-mis-clinic-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8082
+          env:
+            - name: DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: esap_clinic_db_url
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: esap-secret
+                  key: esap_db_user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: esap-secret
+                  key: esap_db_password
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: esap-secret
+                  key: jwt_secret
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: kafka_bootstrap_servers
+            - name: USER_PROFILE_TOPIC_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: user_profile_topic_name
+            - name: AUTH_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: auth_service_url
+            - name: SCHEDULE_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: esap-config
+                  key: schedule_service_url
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            failureThreshold: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8082
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            periodSeconds: 5
+            failureThreshold: 3
+      restartPolicy: Always

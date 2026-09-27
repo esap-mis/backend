@@ -1,13 +1,12 @@
-# k8s/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: esap-service
+  name: esap-core
   namespace: default
 spec:
-  type: ClusterIP  # Внутренний доступ
+  type: ClusterIP
   selector:
-    app: esap
+    app: esap-core
   ports:
     - port: 8080
       targetPort: 8080

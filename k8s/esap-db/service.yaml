@@ -1,4 +1,3 @@
-# k8s/postgres/service.yaml
 apiVersion: v1
 kind: Service
 metadata:

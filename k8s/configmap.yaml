@@ -7,20 +7,41 @@ metadata:
 data:
   app_name: "esap"
   log_level: "INFO"
-  # esap db
-  esap_db: "esap"
-  esap_db_url: "jdbc:postgresql://esap-db-service:5432/esap"
+
+  # Одна СУБД, отдельная база на сервис
+  esap_db: "postgres"
+  esap_auth_db: "esap_auth"
+  esap_clinic_db: "esap_clinic"
+  esap_schedule_db: "esap_schedule"
+  esap_core_db: "esap_core"
+  esap_db_url: "jdbc:postgresql://esap-db-service:5432/esap_auth"
+  esap_clinic_db_url: "jdbc:postgresql://esap-db-service:5432/esap_clinic"
+  esap_schedule_db_url: "jdbc:postgresql://esap-db-service:5432/esap_schedule"
+  esap_core_db_url: "jdbc:postgresql://esap-db-service:5432/esap_core"
+
   # notifications db
   notifications_db: "notifications"
   notifications_db_host: "notifications-db-service"
   notifications_db_port: "27017"
+
   # kafka
   kafka_bootstrap_servers: "kafka-0.kafka-headless.default.svc.cluster.local:9092"
   mail_topic_name: "user.registered.welcome-email"
   notifications_topic_name: "user.notification.push.requested"
   notifications_tokens_topic_name: "user.device.token.registered"
+  user_profile_topic_name: "esap.user.profile"
+  appointment_topic_name: "esap.appointment.created"
+
   api_key: "fake-api-key-for-testing"
   mail_host: "smtp.gmail.com"
   mail_port: "587"
   mail_username: "esap.mis.clinic@gmail.com"
-  api_url: "http://esap-service:8080" # Внутреннее DNS-имя
+
+  # Внутренние адреса сервисов
+  auth_service_url: "http://auth-service:8081"
+  clinic_service_url: "http://clinic-service:8082"
+  schedule_service_url: "http://schedule-service:8083"
+  core_service_url: "http://esap-core:8080"
+
+  # Наружу торчит только шлюз
+  api_url: "http://api-gateway:8000"
