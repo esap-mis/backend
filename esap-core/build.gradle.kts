@@ -46,3 +46,8 @@ dependencyManagement {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.bootBuildImage {
+    // Имя образа отличается от имени модуля: его ждут манифесты в k8s/.
+    imageName = "esap-mis-core:latest"
+}

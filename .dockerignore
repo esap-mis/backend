@@ -1,9 +1,0 @@
-.git
-.idea
-.gradle
-build
-**/build
-*.iml
-k8s
-**/k8s
-*.log

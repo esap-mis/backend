@@ -1,5 +1,9 @@
 name: esap-mis
 
+# Образы сервисов собираются без Dockerfile:
+#   ./gradlew bootBuildImage
+# и дальше поднимаются командой docker compose up -d.
+
 x-service-env: &service-env
   KAFKA_BOOTSTRAP_SERVERS: kafka:9092
   JWT_SECRET: secret
@@ -52,11 +56,7 @@ services:
   # Entry point for all external traffic
   api-gateway:
     container_name: api-gateway
-    build:
-      context: .
-      dockerfile: /Dockerfile
-      args:
-        MODULE: api-gateway
+    image: esap-mis-api-gateway:latest
     restart: "no"
     ports: ["8000:8000"]
     environment:
@@ -75,11 +75,7 @@ services:
 
   auth-service:
     container_name: auth-service
-    build:
-      context: .
-      dockerfile: /Dockerfile
-      args:
-        MODULE: auth-service
+    image: esap-mis-auth-service:latest
     restart: "no"
     ports: ["8081:8081"]
     environment:
@@ -94,11 +90,7 @@ services:
 
   clinic-service:
     container_name: clinic-service
-    build:
-      context: .
-      dockerfile: /Dockerfile
-      args:
-        MODULE: clinic-service
+    image: esap-mis-clinic-service:latest
     restart: "no"
     ports: ["8082:8082"]
     environment:
@@ -115,11 +107,7 @@ services:
 
   schedule-service:
     container_name: schedule-service
-    build:
-      context: .
-      dockerfile: /Dockerfile
-      args:
-        MODULE: schedule-service
+    image: esap-mis-schedule-service:latest
     restart: "no"
     ports: ["8083:8083"]
     environment:
@@ -136,11 +124,7 @@ services:
 
   core:
     container_name: core
-    build:
-      context: .
-      dockerfile: /Dockerfile
-      args:
-        MODULE: esap-core
+    image: esap-mis-core:latest
     restart: "no"
     ports: ["8080:8080"]
     environment:
@@ -189,11 +173,7 @@ services:
 
   notification-service:
     container_name: notification-service
-    build:
-      context: .
-      dockerfile: /Dockerfile
-      args:
-        MODULE: notification-service
+    image: esap-mis-notification-service:latest
     restart: "no"
     ports: ["8084:8084"]
     environment:

@@ -47,3 +47,7 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.bootBuildImage {
+    imageName = "esap-mis-clinic-service:latest"
+}

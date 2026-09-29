@@ -49,3 +49,7 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
+tasks.bootBuildImage {
+    imageName = "esap-mis-notification-service:latest"
+}
+

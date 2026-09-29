@@ -4,10 +4,10 @@ set -e
 # 1. Запустить кластер
 minikube start --cpus=4 --memory=5926
 
-# 2. Собрать jar-ы и docker-образы каждого модуля
+# 2. Собрать образы всех сервисов плагином Spring Boot (Cloud Native Buildpacks)
 # eval $(minikube docker-env)
-for m in api-gateway auth-service clinic-service schedule-service esap-core notification-service; do
-  docker build --build-arg MODULE="$m" -t "esap-mis-$m" .
+./gradlew bootBuildImage
+for m in api-gateway auth-service clinic-service schedule-service core notification-service; do
   minikube image load "esap-mis-$m"
 done
 minikube image load esapmis/frontend:v2

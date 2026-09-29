@@ -48,3 +48,7 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.bootBuildImage {
+    imageName = "esap-mis-auth-service:latest"
+}
