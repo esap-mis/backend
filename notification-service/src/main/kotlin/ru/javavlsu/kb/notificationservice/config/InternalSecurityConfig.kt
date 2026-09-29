@@ -3,7 +3,6 @@ package ru.javavlsu.kb.notificationservice.config
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer
 import org.springframework.security.web.SecurityFilterChain
 
 /**
@@ -16,10 +15,10 @@ class InternalSecurityConfig {
 
     @Bean
     fun internalSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
-        http.csrf(AbstractHttpConfigurer::disable)
+        http.csrf { it.disable() }
             .authorizeHttpRequests { it.anyRequest().permitAll() }
-            .httpBasic(AbstractHttpConfigurer::disable)
-            .formLogin(AbstractHttpConfigurer::disable)
+            .httpBasic { it.disable() }
+            .formLogin { it.disable() }
         return http.build()
     }
 }

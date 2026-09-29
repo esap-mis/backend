@@ -24,7 +24,7 @@ class KafkaConsumer @Autowired constructor(
 ) {
 
     @Throws(JsonProcessingException::class)
-    @KafkaListener(topics = ["${esap.kafka.topics.welcome-email}"], groupId = "notification-service")
+    @KafkaListener(topics = ["\${esap.kafka.topics.welcome-email}"], groupId = "notification-service")
     fun consumePatientCreatedEvent(@Payload message: String) {
         val patientCreatedEvent = objectMapper.readValue(message,
             PatientCreatedEvent::class.java)
@@ -33,7 +33,7 @@ class KafkaConsumer @Autowired constructor(
     }
 
     @Throws(JsonProcessingException::class)
-    @KafkaListener(topics = ["${esap.kafka.topics.token-registration}"], groupId = "notification-service")
+    @KafkaListener(topics = ["\${esap.kafka.topics.token-registration}"], groupId = "notification-service")
     fun consumeTokenRegistrationEvent(@Payload message: String) {
         val tokenRegistrationEvent = objectMapper.readValue(message,
             TokenRegistrationEvent::class.java)
@@ -41,7 +41,7 @@ class KafkaConsumer @Autowired constructor(
     }
 
     @Throws(JsonProcessingException::class)
-    @KafkaListener(topics = ["${esap.kafka.topics.push-notification}"], groupId = "notification-service")
+    @KafkaListener(topics = ["\${esap.kafka.topics.push-notification}"], groupId = "notification-service")
     fun consumeNotificationEvent(@Payload message: String) {
         val notificationEvent = objectMapper.readValue(message,
             NotificationEvent::class.java)
