@@ -24,6 +24,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+    runtimeOnly("org.postgresql:postgresql")
 
     implementation("chat.giga:spring-ai-starter-model-gigachat:${property("springAiVersion")}")
     implementation("org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc")
